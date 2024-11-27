@@ -1,11 +1,14 @@
 import { Section, Cell, Image, List, Button, ButtonCell } from '@telegram-apps/telegram-ui';
 import type { FC } from 'react';
-
 import { Link } from '@/components/Link/Link.tsx';
 import { Page } from '@/components/Page.tsx';
+import {init,postEvent} from "@telegram-apps/sdk";
 
 import tonSvg from './ton.svg';
 import {GenerateAccount} from '@/components/GenerateAccount/GenerateAccount';
+
+init();
+postEvent("web_app_setup_swipe_behavior", { allow_vertical_swipe: false });
 
 export const IndexPage: FC = () => {
   return (
