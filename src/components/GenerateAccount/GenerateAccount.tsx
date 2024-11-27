@@ -18,12 +18,6 @@ export const GenerateAccount: FC = () => {
                 {/* Generate Account Component */}
             </Cell>
         </Section>
-        {/* <Section
-          header="Application Launch Data"
-          footer="These pages help developer to learn more about current launch information"
-        > */}
-        {/* Generate Account Component */}
-        {/* </Section> */}
       </List>
     </Page>
   );
