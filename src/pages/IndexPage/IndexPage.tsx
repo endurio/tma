@@ -1,10 +1,11 @@
-import { Section, Cell, Image, List } from '@telegram-apps/telegram-ui';
+import { Section, Cell, Image, List, Button, ButtonCell } from '@telegram-apps/telegram-ui';
 import type { FC } from 'react';
 
 import { Link } from '@/components/Link/Link.tsx';
 import { Page } from '@/components/Page.tsx';
 
 import tonSvg from './ton.svg';
+import {GenerateAccount} from '@/components/GenerateAccount/GenerateAccount';
 
 export const IndexPage: FC = () => {
   return (
@@ -27,7 +28,11 @@ export const IndexPage: FC = () => {
           header="Application Launch Data"
           footer="These pages help developer to learn more about current launch information"
         >
-          <Link to="/init-data">
+          <ButtonCell>
+            Generate Wallet [ARB & BTC]
+          </ButtonCell>
+          <GenerateAccount/>
+          {/* <Link to="/init-data">
             <Cell subtitle="User data, chat information, technical data">Init Data</Cell>
           </Link>
           <Link to="/launch-params">
@@ -35,7 +40,7 @@ export const IndexPage: FC = () => {
           </Link>
           <Link to="/theme-params">
             <Cell subtitle="Telegram application palette information">Theme Parameters</Cell>
-          </Link>
+          </Link> */}
         </Section>
       </List>
     </Page>
