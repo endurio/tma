@@ -18,7 +18,10 @@
     "@telegram-apps/sdk-react": "^2.0.10",
     "@telegram-apps/telegram-ui": "^2.1.5",
     "@tonconnect/ui-react": "^2.0.5",
+    "bip32": "^5.0.0-rc.0",
+    "bip39": "^3.1.0",
     "eruda": "^3.0.1",
+    "ethers": "^6.13.4",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "react-router-dom": "^6.23.0"
