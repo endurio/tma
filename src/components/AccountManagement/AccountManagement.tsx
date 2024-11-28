@@ -13,6 +13,8 @@ import {shortenAddress} from "@/utils/utils";
 import '@/pages/IndexPage/IndexPage.css';
 import {Iconify} from "../iconify";
 import {ButtonBase} from "@mui/material";
+import {withdrawModal} from "./components/WithdrawModal";
+import {depositModal} from "./components/DepositModal";
 export const AccountManagement: FC = () => {
   const { setWeb3Account, web3Account } = useContext(AppContext);
 
@@ -28,8 +30,8 @@ export const AccountManagement: FC = () => {
             </List>
           </Cell>
           <div>
-            <Button before={<Iconify icon='material-symbols:download'/>} className='w-50'>Deposit</Button>
-            <Button before={<Iconify icon='material-symbols:upload'/>} className='w-50'>Withdraw</Button>
+            <Button onClick={() => {if(web3Account?.evmAddress) depositModal(true, web3Account?.evmAddress)}} before={<Iconify icon='material-symbols:download'/>} className='w-50'>Deposit</Button>
+            <Button onClick={() => {withdrawModal(true)}} before={<Iconify icon='material-symbols:upload'/>} className='w-50'>Withdraw</Button>
           </div>
 
         </Section>

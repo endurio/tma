@@ -5,6 +5,8 @@ import {createContext,useContext,useState,type FC} from "react";
 import {AccountManagement} from "@/components/AccountManagement/AccountManagement";
 import {IWeb3Account} from "@/type";
 import {InitComponent} from "./InitComponent";
+import {DepositModal} from "@/components/AccountManagement/components/DepositModal";
+import {WithdrawModal} from "@/components/AccountManagement/components/WithdrawModal";
 
 interface AppContextType {
   web3Account?: IWeb3Account;
@@ -30,6 +32,8 @@ export const IndexPage: FC = () => {
   return (
     <AppContext.Provider value={{ web3Account, setWeb3Account }}>
       <InitComponent/>
+      <DepositModal/>
+      <WithdrawModal/>
       <Page back={false}>
         <List>
           <AccountManagement />
