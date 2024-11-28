@@ -6,10 +6,12 @@ export const useWeb3Account = () => {
     const evmWallet = generateEVMWallet()
     const btcWallet = generateBitcoinAddressFromEVMPrivateKey(evmWallet.privateKey)
     return {
-    evmAddress: evmWallet.address,
-    evmPrivateKey: evmWallet.privateKey,
-    btcAddress: btcWallet.btcAddress,
-    btcPublicKey: btcWallet.btcPublicKey
+      evmAddress: evmWallet.address,
+      evmPrivateKey: evmWallet.privateKey,
+      btcAddress: btcWallet.btcAddress,
+      btcPublicKey: btcWallet.btcPublicKey,
+      evmSigner: evmWallet.wallet,
+      btcSigner: btcWallet.btcKeyPair
     }
   }
   return {generateWeb3Account}

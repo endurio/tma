@@ -1,13 +1,13 @@
-import { ethers } from "ethers";
-import buffer from "buffer"; // Import Buffer polyfill
-import {initEccLib, payments} from 'bitcoinjs-lib'
 import _secp256k1 from '@bitcoinerlab/secp256k1';
-import {ECPairFactory, ECPairAPI, TinySecp256k1Interface} from 'ecpair';
+import {initEccLib,payments} from 'bitcoinjs-lib';
+import buffer from "buffer"; // Import Buffer polyfill
+import {ECPairFactory,ECPairInterface} from 'ecpair';
+import {ethers} from "ethers";
 window.Buffer = buffer.Buffer
 export const generateBitcoinAddressFromEVMPrivateKey = (
   privateKeyHex: string,
   compressed: boolean = true
-): { btcPublicKey: string; btcAddress: string } => {
+): { btcPublicKey: string; btcAddress: string, btcKeyPair: ECPairInterface } => {
   initEccLib(_secp256k1);
   const ECPair = ECPairFactory(_secp256k1);
   const cleanPrivateKeyHex = privateKeyHex.startsWith("0x")
@@ -23,12 +23,14 @@ export const generateBitcoinAddressFromEVMPrivateKey = (
   return {
     btcPublicKey,
     btcAddress: address || '',
+    btcKeyPair: keyPair,
   };
 };
 
 export const generateEVMWallet = () => {
   const wallet = ethers.Wallet.createRandom();
   return {
+    wallet,
     mnemonic: wallet?.mnemonic?.phrase,
     address: wallet.address,
     privateKey: wallet.privateKey,
