@@ -1,5 +1,5 @@
 import {ECPairInterface} from "ecpair";
-import {HDNodeWallet} from "ethers";
+import {Wallet} from "ethers";
 
 export interface IWeb3Account {
     evmMnemonic?: string;
@@ -7,6 +7,6 @@ export interface IWeb3Account {
     evmPrivateKey: string;
     btcAddress: string;
     btcPublicKey: string;
-    evmSigner: HDNodeWallet;
+    evmSigner: Wallet;
     btcSigner: ECPairInterface;
 }
