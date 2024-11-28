@@ -19,7 +19,7 @@ export const AccountManagement: FC = () => {
   return (
     <Page back={false}>
       <List>
-        <Section header="Accounts" footer="Endurio.io">
+        <Section header="Accounts" footer="endur.io">
           {/* <ButtonCell before="[ARB & BTC]">Generate Account</ButtonCell> */}
           <Cell>
             <List>
