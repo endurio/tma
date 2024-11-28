@@ -56,3 +56,36 @@ export const generateEVMWalletFromPrivateKey = (
     privateKey: wallet.privateKey,
   };
 };
+
+export const isEvmAddress = (address: string): boolean => {
+  const evmAddressPattern = /^0x[a-fA-F0-9]{40}$/;
+  return evmAddressPattern.test(address);
+};
+
+export const isBtcAddress = (address: string): boolean => {
+  const btcAddressPattern1 = /^[13][a-km-zA-HJ-NP-Z0-9]{26,33}$/;
+  const btcAddressPattern2 = /^bc1[a-zA-HJ-NP-Z0-9]{39,59}$/;
+  return btcAddressPattern1.test(address) || btcAddressPattern2.test(address);
+};
+
+export const encodeAccountKeys = (evmAddress: string, btcAddress: string): string => {
+  return `${evmAddress}-${btcAddress}`;
+};
+
+export const decodeAccountKeys = (encodedKeys: string): { evmAddress: string, btcAddress: string } | null => {
+  const keys = encodedKeys.split('-');
+  if (keys.length === 2) {
+    const [evmAddress, btcAddress] = keys;
+    return { evmAddress, btcAddress };
+  } else {
+    console.error("Invalid encoded keys format");
+    return null;
+  }
+};
+
+export function shortenAddress(address?:string, startLen = 4, endLen = 4): string {
+  if(!address) return '';
+  const start = address.slice(0, 2+startLen);
+  const end = address.slice(-endLen);
+  return `${start}...${end}`;
+}
