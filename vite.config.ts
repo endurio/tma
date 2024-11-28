@@ -2,11 +2,13 @@ import { defineConfig } from 'vite';
 import tsconfigPaths from 'vite-tsconfig-paths';
 import react from '@vitejs/plugin-react-swc';
 import mkcert from 'vite-plugin-mkcert';
+import ViteWasmPlugin from 'vite-plugin-wasm';
 
 // https://vitejs.dev/config/
 export default defineConfig({
   base: '/reactjs-template',
   plugins: [
+    ViteWasmPlugin(),
     // Allows using React dev server along with building a React application with Vite.
     // https://npmjs.com/package/@vitejs/plugin-react-swc
     react(),
