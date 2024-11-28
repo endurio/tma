@@ -1,4 +1,4 @@
-import {useInitWeb3Account} from "@/components/GenerateAccount/hook/useWeb3Account";
+import {useInitWeb3Account} from "@/components/AccountManagement/hook/useWeb3Account";
 import {init,postEvent} from "@telegram-apps/sdk";
 import {Fragment,type FC} from "react";
 

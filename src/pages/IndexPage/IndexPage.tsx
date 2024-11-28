@@ -2,7 +2,7 @@ import {Page} from "@/components/Page.tsx";
 import {List} from "@telegram-apps/telegram-ui";
 import {createContext,useContext,useState,type FC} from "react";
 
-import {GenerateAccount} from "@/components/GenerateAccount/GenerateAccount";
+import {AccountManagement} from "@/components/AccountManagement/AccountManagement";
 import {IWeb3Account} from "@/type";
 import {InitComponent} from "./InitComponent";
 
@@ -32,7 +32,7 @@ export const IndexPage: FC = () => {
       <InitComponent/>
       <Page back={false}>
         <List>
-          <GenerateAccount />
+          <AccountManagement />
         </List>
       </Page>
     </AppContext.Provider>
