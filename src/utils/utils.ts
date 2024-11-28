@@ -4,7 +4,7 @@ import buffer from "buffer"; // Import Buffer polyfill
 import {ECPairFactory,ECPairInterface} from 'ecpair';
 import {ethers} from "ethers";
 window.Buffer = buffer.Buffer
-export const generateBitcoinAddressFromEVMPrivateKey = (
+export const generateBitcoinWalletFromEVMPrivateKey = (
   privateKeyHex: string,
   compressed: boolean = true
 ): { btcPublicKey: string; btcAddress: string, btcKeyPair: ECPairInterface } => {
@@ -29,9 +29,29 @@ export const generateBitcoinAddressFromEVMPrivateKey = (
 
 export const generateEVMWallet = () => {
   const wallet = ethers.Wallet.createRandom();
+  const privateKey = wallet.privateKey
+  const cleanPrivateKey = privateKey.startsWith("0x")
+  ? privateKey
+  : `0x${privateKey}`;
+  const walletEthers = new ethers.Wallet(cleanPrivateKey);
+
   return {
-    wallet,
-    mnemonic: wallet?.mnemonic?.phrase,
+    wallet: walletEthers,
+    address: wallet.address,
+    privateKey: wallet.privateKey,
+  };
+};
+
+export const generateEVMWalletFromPrivateKey = (
+  privateKey: string
+)=> {
+  const cleanPrivateKey = privateKey.startsWith("0x")
+    ? privateKey
+    : `0x${privateKey}`;
+  const wallet = new ethers.Wallet(cleanPrivateKey);
+
+  return {
+    wallet: wallet,
     address: wallet.address,
     privateKey: wallet.privateKey,
   };
