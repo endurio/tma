@@ -36,6 +36,7 @@
     "react-qr-code": "^2.0.15",
     "react-router-dom": "^6.23.0",
     "ripemd160": "^2.0.2",
+    "symbiosis-js-sdk": "^3.4.11",
     "tiny-secp256k1": "^2.2.3",
     "vite-plugin-wasm": "^3.3.0"
   },
