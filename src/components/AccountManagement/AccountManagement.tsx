@@ -74,11 +74,11 @@ export const AccountManagement: FC = () => {
               }}
               before={<Iconify icon="material-symbols:download" />}
               disabled={isFetchingWeb3Account}
-              className="w-50"
+              className="w-100"
             >
               Deposit
             </Button>
-            <Button
+            {/* <Button
               onClick={() => {
                 withdrawModal(true);
               }}
@@ -87,13 +87,13 @@ export const AccountManagement: FC = () => {
               className="w-50"
             >
               Withdraw
-            </Button>
+            </Button> */}
             <Button
               onClick={async () => {
                 await fetchWeb3AccountState()
               }}
               loading={isFetchingWeb3Account}
-              style={{marginTop: '0.5rem'}}
+              style={{marginTop: '0.5rem', marginBottom: '0.5rem'}}
               before={<Iconify icon="tabler:reload" />}
               className="w-100"
             >
