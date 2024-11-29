@@ -2,10 +2,10 @@ import {
   ContractCallContext,
   Multicall,
 } from "ethereum-multicall";
-import { Provider } from '@ethersproject/providers';
+import {providers} from "ethers";
 
 export const multicall = async(
-  ethersProvider: Provider,
+  ethersProvider: providers.JsonRpcProvider,
   contexts: ContractCallContext[],
   tryAggregate: boolean = true,
 ): Promise<any[]> => {

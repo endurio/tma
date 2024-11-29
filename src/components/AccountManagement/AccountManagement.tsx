@@ -26,6 +26,9 @@ export const AccountManagement: FC = () => {
           <Cell>
             <List>
               <div>EVM: {shortenAddress(web3Account?.evmAddress)}</div>
+              {Object.keys(web3Account?.balances ?? {}).map((balance) => {
+                return <div>{balance}</div>
+              })}
               <div>BTC: {shortenAddress(web3Account?.btcAddress)}</div>
             </List>
           </Cell>

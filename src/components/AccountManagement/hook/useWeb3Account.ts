@@ -1,8 +1,10 @@
+import {useAppContext} from "@/pages/IndexPage/IndexPage";
 import {IWeb3Account} from "@/type";
-import {decodeAccountKeys, encodeAccountKeys, generateBitcoinWalletFromEVMPrivateKey, generateEVMWallet, generateEVMWalletFromPrivateKey, isBtcAddress, isEvmAddress} from "@/utils/utils";
-import {useContext, useEffect} from "react";
-import {getCloudStorageItem, getCloudStorageKeys, setCloudStorageItem} from '@telegram-apps/sdk-react'
-import {AppContext, useAppContext} from "@/pages/IndexPage/IndexPage";
+import {WHITELIST_TOKEN_LIST} from "@/utils/constant";
+import {loadWeb3AccountData} from "@/utils/tools";
+import {decodeAccountKeys,encodeAccountKeys,generateBitcoinWalletFromEVMPrivateKey,generateEVMWallet,generateEVMWalletFromPrivateKey,isBtcAddress,isEvmAddress} from "@/utils/utils";
+import {getCloudStorageItem,getCloudStorageKeys,setCloudStorageItem} from '@telegram-apps/sdk-react';
+import {useEffect} from "react";
 
 export const useWeb3Account = () => {
   const {web3Account, setWeb3Account} = useAppContext()
@@ -15,32 +17,50 @@ export const useWeb3Account = () => {
       btcAddress: btcWallet.btcAddress,
       btcPublicKey: btcWallet.btcPublicKey,
       evmSigner: evmWallet.wallet,
-      btcSigner: btcWallet.btcKeyPair
+      btcSigner: btcWallet.btcKeyPair,
+      balances: {},
+      allowances: {},
     }
   }
   const getWeb3AccountFromPrivateKey = (privateKey: string): IWeb3Account => {
     const evmWallet = generateEVMWalletFromPrivateKey(privateKey)
     const btcWallet = generateBitcoinWalletFromEVMPrivateKey(privateKey)
+    
     return {
       evmAddress: evmWallet.address,
       evmPrivateKey: evmWallet.privateKey,
       btcAddress: btcWallet.btcAddress,
       btcPublicKey: btcWallet.btcPublicKey,
       evmSigner: evmWallet.wallet,
-      btcSigner: btcWallet.btcKeyPair
+      btcSigner: btcWallet.btcKeyPair,
+      balances: {},
+      allowances: {},
     }
+  }
+  const fetchWeb3AccountState = async () => {
+    const evmAddress = web3Account?.evmAddress
+    const _webAccount = web3Account
+    if(!_webAccount || !evmAddress) return;
+    const web3State = await loadWeb3AccountData([evmAddress], WHITELIST_TOKEN_LIST,[])
+    _webAccount.balances = web3State[evmAddress].balances
+    _webAccount.allowances = web3State[evmAddress].allowances
+    
+    if(setWeb3Account) setWeb3Account(_webAccount)
+    return _webAccount
   }
   return {
     account: web3Account,
+    fetchWeb3AccountState,
     setWeb3Account,
     generateWeb3Account,
-    getWeb3AccountFromPrivateKey}
+    getWeb3AccountFromPrivateKey
+  }
 };
 
 // web3 account keys = evmAddress-evmBtc, value = evmPrivateKey
 const CURRENT_ACCOUNT_INDEX = 0 // for multi account if needed
 export const useInitWeb3Account = () => {
-  const {generateWeb3Account, getWeb3AccountFromPrivateKey, setWeb3Account} = useWeb3Account()
+  const {generateWeb3Account, getWeb3AccountFromPrivateKey, fetchWeb3AccountState, setWeb3Account} = useWeb3Account()
   const initAccount = async () => {
     const keys = await getCloudStorageKeys()
     const accountKeys = keys.filter(key => isEvmAddress(decodeAccountKeys(key)?.evmAddress || '') && isBtcAddress(decodeAccountKeys(key)?.btcAddress || ''))
@@ -53,6 +73,7 @@ export const useInitWeb3Account = () => {
     } else {
       const currentAccountPrivateKey = await getCloudStorageItem([currentAccountKey])
       const web3Account = getWeb3AccountFromPrivateKey(currentAccountPrivateKey[currentAccountKey])
+      await fetchWeb3AccountState()
       if(setWeb3Account) setWeb3Account(web3Account)
     };
   }

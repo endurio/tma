@@ -72,14 +72,14 @@ export const encodeAccountKeys = (evmAddress: string, btcAddress: string): strin
   return `${evmAddress}-${btcAddress}`;
 };
 
-export const decodeAccountKeys = (encodedKeys: string): { evmAddress: string, btcAddress: string } | null => {
+export const decodeAccountKeys = (encodedKeys: string): { evmAddress: string, btcAddress: string }=> {
   const keys = encodedKeys.split('-');
   if (keys.length === 2) {
     const [evmAddress, btcAddress] = keys;
     return { evmAddress, btcAddress };
   } else {
-    console.error("Invalid encoded keys format");
-    return null;
+    return { evmAddress: '', btcAddress: '' };
+
   }
 };
 
