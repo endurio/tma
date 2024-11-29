@@ -89,3 +89,12 @@ export function shortenAddress(address?:string, startLen = 4, endLen = 4): strin
   const end = address.slice(-endLen);
   return `${start}...${end}`;
 }
+
+
+export const copyToClipboard = (text: string) => {
+  navigator.clipboard.writeText(text).then(() => {
+    console.log("Copied to clipboard:", text);
+  }).catch(err => {
+    console.error("Failed to copy to clipboard:", err);
+  });
+};
