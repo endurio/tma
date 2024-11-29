@@ -5,25 +5,26 @@ import {
   List,
   Section,
 } from "@telegram-apps/telegram-ui";
-import { useContext, type FC } from "react";
+import {type FC} from "react";
 
-import { Page } from "@/components/Page.tsx";
-import { AppContext, useAppContext } from "@/pages/IndexPage/IndexPage";
-import { copyToClipboard, shortenAddress } from "@/utils/utils";
+import {Page} from "@/components/Page.tsx";
+import {useAppContext} from "@/pages/IndexPage/IndexPage";
+import {copyToClipboard,shortenAddress} from "@/utils/utils";
 // import {Iconify} from "../iconify";
 import "@/pages/IndexPage/IndexPage.css";
-import { Iconify } from "../iconify";
-import { ButtonBase, Icon } from "@mui/material";
-import { withdrawModal } from "./components/WithdrawModal";
-import { depositModal } from "./components/DepositModal";
-import { WHITELIST_TOKEN } from "@/utils/constant";
+import {WHITELIST_TOKEN} from "@/utils/constant";
+import {Iconify} from "../iconify";
+import {depositModal} from "./components/DepositModal";
+import {withdrawModal} from "./components/WithdrawModal";
+import {useWeb3Account} from "./hook/useWeb3Account";
 export const AccountManagement: FC = () => {
-  const { setWeb3Account, web3Account } = useAppContext();
+  const { setWeb3Account, web3Account, isFetchingWeb3Account } = useAppContext();
+  const {fetchWeb3AccountState} = useWeb3Account()
   return (
     <Page back={false}>
       <List>
         <Section header="Accounts" footer="endur.io">
-          {/* <ButtonCell before="[ARB & BTC]">Generate Account</ButtonCell> */}
+          {/* <ButtonCell before="[ARB & BTC]">Generate Account</BuxttonCell> */}
           <Cell>
             <List>
               <div>
@@ -31,6 +32,7 @@ export const AccountManagement: FC = () => {
                   style={{ width: "100vw" }}
                   onClick={() => copyToClipboard(web3Account?.evmAddress || "")}
                   before={<Iconify icon="token:arbi" />}
+                  disabled={isFetchingWeb3Account}
                   after={
                     <Iconify icon={"material-symbols:content-copy-outline"} />
                   }
@@ -43,6 +45,7 @@ export const AccountManagement: FC = () => {
                   style={{ width: "100vw" }}
                   onClick={() => copyToClipboard(web3Account?.btcAddress || "")}
                   before={<Iconify icon="token:bitcoin" />}
+                  disabled={isFetchingWeb3Account}
                   after={
                     <Iconify icon={"material-symbols:content-copy-outline"} />
                   }
@@ -70,6 +73,7 @@ export const AccountManagement: FC = () => {
                   depositModal(true, web3Account?.evmAddress);
               }}
               before={<Iconify icon="material-symbols:download" />}
+              disabled={isFetchingWeb3Account}
               className="w-50"
             >
               Deposit
@@ -79,9 +83,21 @@ export const AccountManagement: FC = () => {
                 withdrawModal(true);
               }}
               before={<Iconify icon="material-symbols:upload" />}
+              disabled={isFetchingWeb3Account}
               className="w-50"
             >
               Withdraw
+            </Button>
+            <Button
+              onClick={async () => {
+                await fetchWeb3AccountState()
+              }}
+              loading={isFetchingWeb3Account}
+              style={{marginTop: '0.5rem'}}
+              before={<Iconify icon="tabler:reload" />}
+              className="w-100"
+            >
+              Reload
             </Button>
           </div>
         </Section>

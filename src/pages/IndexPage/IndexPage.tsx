@@ -13,11 +13,15 @@ interface AppContextType {
   setWeb3Account?: React.Dispatch<
     React.SetStateAction<IWeb3Account | undefined>
   >;
+  isFetchingWeb3Account: boolean
+  setIsFetchingWeb3Account?: React.Dispatch<React.SetStateAction<boolean>>
 }
 
 export const AppContext = createContext<AppContextType>({
   web3Account: undefined,
   setWeb3Account: undefined,
+  isFetchingWeb3Account: true,
+  setIsFetchingWeb3Account: undefined,
 });
 export const useAppContext = () => {
   const context = useContext(AppContext);
@@ -29,8 +33,10 @@ export const useAppContext = () => {
 
 export const IndexPage: FC = () => {
   const [web3Account, setWeb3Account] = useState<IWeb3Account>();
+  const [isFetchingWeb3Account, setIsFetchingWeb3Account] = useState<boolean>(true);
+
   return (
-    <AppContext.Provider value={{ web3Account, setWeb3Account }}>
+    <AppContext.Provider value={{ web3Account, setWeb3Account, setIsFetchingWeb3Account, isFetchingWeb3Account }}>
       <InitComponent/>
       <DepositModal/>
       <WithdrawModal/>
