@@ -3,6 +3,7 @@ import {
   ButtonCell,
   Cell,
   Modal,
+  Text,
   Section,
 } from "@telegram-apps/telegram-ui";
 import { useEffect, useState } from "react";
@@ -13,6 +14,7 @@ import { copyToClipboard, shortenAddress } from "@/utils/utils";
 import { Iconify } from "@/components/iconify";
 import "./index.css";
 import { WHITELIST_TOKEN } from "@/utils/constant";
+import {JSONProvider} from "@/config";
 let _modal: (props: { visible: boolean; depositAddress?: string }) => void;
 
 export const DepositModal = () => {
@@ -40,23 +42,27 @@ export const DepositModal = () => {
     <Modal open={visible} trigger={undefined} onOpenChange={setVisible}>
       <Section header={header}>
         <Cell>
-        <Button
-          style={{width: '100vw'}}
-          onClick={() => copyToClipboard(depositAddress)}
-          before={
-            <div>
-              {Object.keys(WHITELIST_TOKEN).map((symbol) => {
-                return <Iconify icon={`token:${symbol.toLowerCase()}`} />;
-              })}
-            </div>
-          }
-          after={<Iconify icon={"material-symbols:content-copy-outline"} />}
-        >
-          {shortenAddress(depositAddress)}
-        </Button>
+          <Button
+            style={{ width: "100vw" }}
+            onClick={() => copyToClipboard(depositAddress)}
+            before={
+              <div>
+                {Object.keys(WHITELIST_TOKEN).map((symbol) => {
+                  return <Iconify icon={`token:${symbol.toLowerCase()}`} />;
+                })}
+              </div>
+            }
+            after={<Iconify icon={"material-symbols:content-copy-outline"} />}
+          >
+            {shortenAddress(depositAddress)}
+            
+          </Button>
         </Cell>
-       
+        <Cell before={<Iconify icon={'token-branded:arbi'}/>} subtitle={`Arbitrum One | ${JSONProvider?._network?.chainId}`}>
+            Chain:
+        </Cell>
         <div className="qr-address-wrap">
+         
           <QRCode
             size={256}
             className="qr-address"
