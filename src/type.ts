@@ -1,5 +1,6 @@
 import {ECPairInterface} from "ecpair";
 import {BigNumber, Wallet} from "ethers";
+import {ChainId, Icons} from "symbiosis-js-sdk";
 
 export interface IWeb3Account {
     evmMnemonic?: string;
@@ -11,6 +12,19 @@ export interface IWeb3Account {
     btcSigner: ECPairInterface;
     balances: IWeb3AccountBalance
     allowances: IWeb3AccountAllowances
+}
+
+export type TokenConstructor = {
+  name?: string
+  symbol?: string
+  address: string
+  decimals: number
+  chainId: ChainId
+  isNative?: boolean
+  chainFromId?: ChainId
+  icons?: Icons
+  userToken?: boolean
+  deprecated?: boolean
 }
 export interface IWeb3AccountBalance {[tokenAddress: string]: BigNumber}
 export interface IWeb3AccountAllowances {[tokenAddress: string]: {[spender: string]: BigNumber}} 

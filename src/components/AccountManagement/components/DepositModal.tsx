@@ -59,7 +59,7 @@ export const DepositModal = () => {
           </Button>
         </Cell>
         <Cell before={<Iconify icon={'token-branded:arbi'}/>} subtitle={`Arbitrum One | ${JSONProvider?._network?.chainId}`}>
-            Chain:
+            Deposit:
         </Cell>
         <div className="qr-address-wrap">
          

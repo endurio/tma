@@ -98,3 +98,7 @@ export const copyToClipboard = (text: string) => {
     console.error("Failed to copy to clipboard:", err);
   });
 };
+
+export const axiosErrorEncode = (err: any):any => {
+  return err?.response?.data || `${err?.code}: ${err?.reason || err?.msg || err?.message}`
+}

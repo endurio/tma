@@ -4,5 +4,8 @@ export const WHITELIST_TOKEN: {[symbol: string]: {address: string, decimals: num
     USDT: {address: '0xfd086bc7cd5c481dcc9c85ebe478a1c0b69fcbb9', decimals: 18},
     ETH: {address: NATIVE_ADDRESS, decimals: 18}
 }
+
+export const BITCOIN_CHAIN_ID = 3652501241
+export const SYMBIOSIS_URL_API='https://api.symbiosis.finance/crosschain/v1/swap'
 export const WHITELIST_TOKEN_LIST: string[] = Object.keys(WHITELIST_TOKEN).map((symbol: any) => WHITELIST_TOKEN[symbol].address).filter(address => address !== NATIVE_ADDRESS)
 export const MULTICALL_ADDRESS = '0xcA11bde05977b3631167028862bE2a173976CA11'
