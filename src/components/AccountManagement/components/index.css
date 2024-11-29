@@ -1,0 +1,9 @@
+.qr-address {
+    height: 'auto';
+    max-width: 100%;
+    width: 80%;
+    padding: 10%;
+}
+.qr-address-wrap {
+    border-radius: 20px;
+}
