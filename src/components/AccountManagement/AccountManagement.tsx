@@ -65,7 +65,7 @@ export const AccountManagement: FC = () => {
                           WHITELIST_TOKEN[symbol]?.address
                         ]
                       ) /
-                        10 ** WHITELIST_TOKEN[symbol].decimals || ""
+                        10 ** WHITELIST_TOKEN[symbol].decimals || "0"
                     ).toString?.()}
                   </div>
                 );
