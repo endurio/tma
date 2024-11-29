@@ -37,14 +37,14 @@ export const useWeb3Account = () => {
       allowances: {},
     }
   }
-  const fetchWeb3AccountState = async () => {
-    const evmAddress = web3Account?.evmAddress
-    const _webAccount = web3Account
+  const fetchWeb3AccountState = async (web3AccountOverride?: IWeb3Account) => {
+    const evmAddress = web3AccountOverride?.evmAddress || web3Account?.evmAddress
+    const _webAccount = web3AccountOverride || web3Account
     if(!_webAccount || !evmAddress) return;
     const web3State = await loadWeb3AccountData([evmAddress], WHITELIST_TOKEN_LIST,[])
     _webAccount.balances = web3State[evmAddress].balances
     _webAccount.allowances = web3State[evmAddress].allowances
-    
+    console.log('#state', _webAccount)
     if(setWeb3Account) setWeb3Account(_webAccount)
     return _webAccount
   }
@@ -73,8 +73,7 @@ export const useInitWeb3Account = () => {
     } else {
       const currentAccountPrivateKey = await getCloudStorageItem([currentAccountKey])
       const web3Account = getWeb3AccountFromPrivateKey(currentAccountPrivateKey[currentAccountKey])
-      await fetchWeb3AccountState()
-      if(setWeb3Account) setWeb3Account(web3Account)
+      await fetchWeb3AccountState(web3Account)
     };
   }
   useEffect(() => {

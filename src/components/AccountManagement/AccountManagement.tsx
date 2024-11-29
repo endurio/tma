@@ -1,13 +1,14 @@
 import {
   Button,
   Cell,
+  Divider,
   List,
   Section
 } from "@telegram-apps/telegram-ui";
 import {useContext,type FC} from "react";
 
 import {Page} from "@/components/Page.tsx";
-import {AppContext} from "@/pages/IndexPage/IndexPage";
+import {AppContext, useAppContext} from "@/pages/IndexPage/IndexPage";
 import {shortenAddress} from "@/utils/utils";
 // import {Iconify} from "../iconify";
 import '@/pages/IndexPage/IndexPage.css';
@@ -15,9 +16,9 @@ import {Iconify} from "../iconify";
 import {ButtonBase} from "@mui/material";
 import {withdrawModal} from "./components/WithdrawModal";
 import {depositModal} from "./components/DepositModal";
+import {WHITELIST_TOKEN} from "@/utils/constant";
 export const AccountManagement: FC = () => {
-  const { setWeb3Account, web3Account } = useContext(AppContext);
-
+  const { setWeb3Account, web3Account } = useAppContext();
   return (
     <Page back={false}>
       <List>
@@ -26,9 +27,11 @@ export const AccountManagement: FC = () => {
           <Cell>
             <List>
               <div>EVM: {shortenAddress(web3Account?.evmAddress)}</div>
-              {Object.keys(web3Account?.balances ?? {}).map((balance) => {
-                return <div>{balance}</div>
+              <Divider/>
+              {Object.keys(WHITELIST_TOKEN).map((symbol) => {
+                return <div>{symbol}: {web3Account?.balances?.[WHITELIST_TOKEN[symbol]?.address].toString?.()}</div>
               })}
+              <Divider/>
               <div>BTC: {shortenAddress(web3Account?.btcAddress)}</div>
             </List>
           </Cell>
