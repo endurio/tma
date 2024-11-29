@@ -58,11 +58,11 @@ export const findSymbiosisTokens = ({
     if (!chain) return [];
   
     const { stables } = chain;
-    const tokensByAddress = chain.stables.filter((stable => stable.address.toLowerCase() === tokenAddress.toLowerCase()))
+    const tokensByAddress = stables.filter((stable => stable.address.toLowerCase() === tokenAddress.toLowerCase()))
     if(tokensByAddress.length > 0) return tokensByAddress
-    const tokensBySymbol = chain.stables.filter(stable => stable.symbol?.includes(symbol))
+    const tokensBySymbol = stables.filter(stable => stable.symbol?.includes(symbol))
     if(tokensBySymbol.length > 0) return tokensBySymbol
-    const tokensByName = name ? chain.stables.filter(stable => stable.name?.includes(name)) : []
+    const tokensByName = name ? stables.filter(stable => stable.name?.includes(name)) : []
     if(tokensByName.length > 0) return tokensByName
     return []
 }
