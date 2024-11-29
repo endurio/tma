@@ -65,37 +65,6 @@ export const DepositModal = () => {
           />
         </div>
       </Section>
-      {/* <div
-        style={{
-          height: "auto",
-          margin: "0 auto",
-          maxWidth: 64,
-          width: "100%",
-        }}
-      >
-        
-      </div> */}
-      {/* <div style={{marginBottom: '1rem'}}>
-        <Button
-          className="w-50"
-          onClick={() => {
-            resolveRef.current(false);
-            setVisible(false);
-          }}
-        >
-          {" "}
-          Cancel
-        </Button>
-        <Button
-          className="w-50"
-          onClick={() => {
-            resolveRef.current(true);
-            setVisible(false);
-          }}
-        >
-          Confirm
-        </Button>
-      </div> */}
     </Modal>
   );
 };

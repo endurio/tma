@@ -1,9 +1,13 @@
 .qr-address {
     height: 'auto';
     max-width: 100%;
-    width: 80%;
-    padding: 10%;
+
+    border: 2px solid white;
+    border-radius: 20px;
 }
 .qr-address-wrap {
-    border-radius: 20px;
+    width: 100%;
+    text-align: center;
+    padding-top: 2%;
+    padding-bottom: 2%;
 }
