@@ -5,22 +5,32 @@ import {
   List,
   Section,
 } from "@telegram-apps/telegram-ui";
-import { type FC } from "react";
+import {useEffect, type FC} from "react";
 
-import { Page } from "@/components/Page.tsx";
-import { useAppContext } from "@/pages/IndexPage/IndexPage";
-import { copyToClipboard, shortenAddress } from "@/utils/utils";
+import {Page} from "@/components/Page.tsx";
+import {useAppContext} from "@/pages/IndexPage/IndexPage";
+import {copyToClipboard,shortenAddress} from "@/utils/utils";
 // import {Iconify} from "../iconify";
+import {useSymbiosis} from "@/hook/useSymbiosis";
 import "@/pages/IndexPage/IndexPage.css";
-import { WHITELIST_TOKEN } from "@/utils/constant";
-import { Iconify } from "../iconify";
-import { depositModal } from "./components/DepositModal";
-import { withdrawModal } from "./components/WithdrawModal";
-import { useWeb3Account } from "./hook/useWeb3Account";
+import {WHITELIST_TOKEN} from "@/utils/constant";
+import {ChainId,Token} from "symbiosis-js-sdk";
+import {Iconify} from "../iconify";
+import {depositModal} from "./components/DepositModal";
+import {useWeb3Account} from "./hook/useWeb3Account";
 export const AccountManagement: FC = () => {
   const { setWeb3Account, web3Account, isFetchingWeb3Account } =
     useAppContext();
   const { fetchWeb3AccountState } = useWeb3Account();
+  const {swapLoading, swapError, swapResult, performSwap} = useSymbiosis()
+  const swap = async () => {
+    const tokenIn = new Token({address: '', isNative: true, symbol: 'ETH', chainId: ChainId.ARBITRUM_MAINNET, decimals: 18})
+    const tokenOut = new Token({address: '', symbol: 'BTC', chainId: ChainId.BTC_MAINNET, decimals: 18})
+    await performSwap({tokenIn, tokenOut, tokenInAmount: '0.001', estimateOnly: true})
+  }
+  useEffect(() => {
+    console.log('#res', swapError, swapResult)
+  },[swapError, swapResult ])
   return (
     <Page back={false}>
       <List>
@@ -80,20 +90,27 @@ export const AccountManagement: FC = () => {
               }}
               before={<Iconify icon="material-symbols:download" />}
               disabled={isFetchingWeb3Account}
-              className="w-100"
+              className="w-50"
             >
               Deposit
             </Button>
-            {/* <Button
+            <Button
               onClick={() => {
-                withdrawModal(true);
+                swap()
               }}
-              before={<Iconify icon="material-symbols:upload" />}
+              loading={swapLoading}
+              before={<Iconify icon="material-symbols:swap-horiz-rounded" />}
+              // after={
+              //   <div>
+              //     <Iconify icon={`token:arbi`} />
+              //     <Iconify icon={`token:btc`} />
+              // </div>
+              // }
               disabled={isFetchingWeb3Account}
               className="w-50"
             >
-              Withdraw
-            </Button> */}
+              Swap
+            </Button>
             <Button
               onClick={async () => {
                 await fetchWeb3AccountState();
@@ -106,6 +123,7 @@ export const AccountManagement: FC = () => {
               Reload
             </Button>
           </div>
+          <div>{String(swapError) || JSON.stringify(swapResult)}</div>
         </Section>
       </List>
     </Page>

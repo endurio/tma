@@ -38,3 +38,88 @@ export type IWeb3OnChainState= {
       };
     };
 };
+
+export type SwapExactInResultResponse = {
+  fee: {
+    symbol: string
+    icon: string
+    address: string
+    amount: string
+    chainId: number
+    decimals: number
+  }
+  route: Array<{
+    symbol: string
+    icon: string
+    address: string
+    chainId: number
+    decimals: number
+  }>
+  inTradeType: string
+  outTradeType: string
+  fees: Array<{
+    provider: string
+    value: {
+      symbol: string
+      icon: string
+      address: string
+      amount: string
+      chainId: number
+      decimals: number
+    }
+    save: {
+      symbol: string
+      icon: string
+      address: string
+      amount: string
+      chainId: number
+      decimals: number
+    }
+    description: string
+  }>
+  routes: Array<{
+    provider: string
+    tokens: Array<{
+      symbol: string
+      icon: string
+      address: string
+      chainId: number
+      decimals: number
+    }>
+  }>
+  kind: string
+  priceImpact: string
+  tokenAmountOut: {
+    symbol: string
+    icon: string
+    address: string
+    amount: string
+    chainId: number
+    decimals: number
+  }
+  tokenAmountOutMin: {
+    symbol: string
+    icon: string
+    address: string
+    amount: string
+    chainId: number
+    decimals: number
+  }
+  amountInUsd: {
+    symbol: string
+    address: string
+    amount: string
+    chainId: number
+    decimals: number
+  }
+  approveTo: string
+  type: string
+  rewards: Array<any>
+  estimatedTime: number
+  tx: {
+    chainId: number
+    data: string
+    to: string
+    value: string
+  }
+}
