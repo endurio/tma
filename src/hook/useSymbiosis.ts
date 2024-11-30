@@ -10,7 +10,7 @@ export const useSymbiosis = () => {
   const { account } = useWeb3Account();
   const [swapResult, setSwapResult] = useState<SwapExactInResultResponse & {receipt: providers.TransactionReceipt} | BigNumber | string>('');
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const [error, setError] = useState<string>('');
 
   const performSwap = async ({tokenIn, tokenOut, tokenInAmount, slippage, estimateOnly}: {tokenIn: Token, tokenOut: Token, tokenInAmount: string, slippage?: number, estimateOnly?: boolean }) => {
     try {
