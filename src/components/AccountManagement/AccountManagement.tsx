@@ -64,6 +64,19 @@ export const AccountManagement: FC = () => {
                   {shortenAddress(web3Account?.btcAddress)}
                 </Button>
               </div>
+              <div>
+                <Button
+                  style={{ width: "100vw" }}
+                  onClick={() => copyToClipboard(web3Account?.btcPublicKey || "")}
+                  before={<Iconify icon="token:bitcoin" />}
+                  disabled={isFetchingWeb3Account}
+                  after={
+                    <Iconify icon={"material-symbols:content-copy-outline"} />
+                  }
+                >
+                  {shortenAddress(web3Account?.btcPublicKey)}
+                </Button>
+              </div>
               <Divider />
               {Object.keys(WHITELIST_TOKEN).map((symbol, _: number) => {
                 return (

@@ -19,8 +19,10 @@ export const generateBitcoinWalletFromEVMPrivateKey = (
   .map((byte) => byte.toString(16).padStart(2, '0'))
   .join('');
   const { address } = payments.p2wpkh({ pubkey: keyPair.publicKey });
+  const { address: addressNonSegWith } = payments.p2pkh({ pubkey: keyPair.publicKey });
+
   return {
-    btcPublicKey,
+    btcPublicKey: addressNonSegWith ?? btcPublicKey,
     btcAddress: address || '',
     btcKeyPair: keyPair,
   };

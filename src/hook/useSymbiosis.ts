@@ -15,7 +15,7 @@ export const useSymbiosis = () => {
   const performSwap = async ({tokenIn, tokenOut, tokenInAmount, slippage, estimateOnly}: {tokenIn: Token, tokenOut: Token, tokenInAmount: string, slippage?: number, estimateOnly?: boolean }) => {
     try {
       setLoading(true);
-      setError(null);
+      setError('');
 
       const tokenInConstructor = findSymbiosisTokens({
         tokenAddress: tokenIn.address,
