@@ -12,7 +12,7 @@ import {useEffect, type FC} from "react";
 
 import {Page} from "@/components/Page.tsx";
 import {useAppContext} from "@/pages/IndexPage/IndexPage";
-import {copyToClipboard,shortenAddress} from "@/utils/utils";
+import {copyToClipboard,shortenAddress, zerofy} from "@/utils/utils";
 // import {Iconify} from "../iconify";
 import {useSymbiosis} from "@/hook/useSymbiosis";
 import "@/pages/IndexPage/IndexPage.css";
@@ -88,21 +88,21 @@ export const AccountManagement: FC = () => {
                    <Chip style={{padding: 3, background: 'none'}} before={<div>
                     {/* <Iconify icon={`token-branded:arbi`}/> */}
                     <Iconify icon={`token-branded:${symbol.toLowerCase()}`}/>
-                   </div>}>{symbol}: {(
+                   </div>}>{symbol}: {zerofy(
                         Number(
                           web3Account?.balances?.[
                             WHITELIST_TOKEN[symbol]?.address
                           ]
                         ) /
-                          10 ** WHITELIST_TOKEN[symbol].decimals || "0"
-                      ).toString?.()}</Chip>
+                          10 ** WHITELIST_TOKEN[symbol].decimals || 0
+                      )}</Chip>
                  </div>
                 );
               })}
                 <Chip style={{padding: 4, background: 'none'}} before={<div>
                   <Iconify icon={`token-branded:btc`}/>
                   </div>
-                  }>BTC: {web3Account?.btcDisplayBalance}</Chip>
+                  }>BTC: {zerofy(web3Account?.btcDisplayBalance || 0)}</Chip>
               </div>
             </List>
           </Cell>

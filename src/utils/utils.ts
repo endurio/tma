@@ -109,3 +109,46 @@ export const iewbtc = (a: number | string | BigInt | BigNumber): string => {
 export const weibtc = (a: number | string | BigInt | BigNumber): string => {
   return String(Number(a ?? 0) / 1e8)
 }
+
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  export function toFixed(x: any): string {
+    if (Math.abs(x) < 1.0) {
+      // eslint-disable-next-line no-var
+      var e = parseInt(x.toString().split('e-')[1]);
+      if (e) {
+        x *= Math.pow(10, e - 1);
+        x = String('0.' + (new Array(e)).join('0') + x.toString().substring(2));
+      }
+    } else {
+      // eslint-disable-next-line no-var
+      var e = parseInt(x.toString().split('+')[1]);
+      if (e > 20) {
+        e -= 20;
+        x /= Math.pow(10, e);
+        x = String(x + (new Array(e + 1)).join('0'));
+      }
+    }
+    return x;
+  }
+  export const zerofy = (value: number, minZeroDecimal: number = 4): string => {
+    const x = value
+    const countZeroAfterDot = -Math.floor(Math.log10(x) + 1)
+    if (
+      Number.isFinite(countZeroAfterDot) &&
+      countZeroAfterDot >= minZeroDecimal
+    ) {
+      const ucZeros = String.fromCharCode(
+        parseInt(`+208${countZeroAfterDot}`, 16)
+      )
+      return x
+        .toLocaleString('fullwide', {
+          maximumSignificantDigits: 4,
+          maximumFractionDigits: 18
+        })
+        .replace(/[.,]{1}0+/, `.0${ucZeros}`)
+    }
+    return value.toLocaleString('fullwide', {
+      maximumSignificantDigits: 4,
+      maximumFractionDigits: 18
+    })
+  }
