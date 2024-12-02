@@ -41,11 +41,17 @@ export const useWeb3Account = () => {
     const evmAddress = web3AccountOverride?.evmAddress || web3Account?.evmAddress
     const _webAccount = web3AccountOverride || web3Account
     if(!_webAccount || !evmAddress || !setIsFetchingWeb3Account || !setWeb3Account) return;
+    // client.getUnspents(web3Account?.btcPublicKey ?? '')
+    // .catch(console.error)
+    // .then((unspents) => {
+    //   console.log('#unspent', unspents)
+    // })
     setIsFetchingWeb3Account(true)
     const web3State = await loadWeb3AccountData([evmAddress], WHITELIST_TOKEN_LIST,[])
     _webAccount.balances = web3State[evmAddress].balances
     _webAccount.allowances = web3State[evmAddress].allowances
     console.log('#state', _webAccount)
+
     setWeb3Account(_webAccount)
     setIsFetchingWeb3Account(false)
     return _webAccount

@@ -1,6 +1,6 @@
-import {decShift} from "./big";
-
-type RequestModule = (options: RequestOptions, callback: (err: any, res: any) => void) => void;
+import axios, { AxiosRequestConfig } from 'axios';
+import { decShift } from './big';
+import blockcypher from './blockcypher';
 
 interface BlockchainClientOptions {
   inBrowser: boolean;
@@ -10,15 +10,7 @@ interface BlockchainClientOptions {
   network: string;
 }
 
-interface RequestOptions {
-  method: string;
-  uri: string;
-  headers: Record<string, string>;
-  body?: string;
-}
-
 class BlockchainClient {
-  private request: RequestModule;
   private opts: BlockchainClientOptions;
   private cacheBlock: Record<string | number, any> = {};
   private cacheTx: Record<string, any> = {};
@@ -30,15 +22,8 @@ class BlockchainClient {
 
     this.opts = opts;
 
-    if (opts.inBrowser) {
-      this.request = require('browser-request');
-    } else {
-      this.request = require('request');
-    }
-
     if (opts.BlockCypherKey) {
-      const blockcypher = require('./blockcypher');
-      this.bc = blockcypher({
+      this.bc = new blockcypher({
         inBrowser: opts.inBrowser,
         key: opts.BlockCypherKey,
         network: opts.network,
@@ -54,117 +39,84 @@ class BlockchainClient {
     return `${this.getBaseUrl()}${path}`;
   }
 
-  get(path: string, callback: (err: any, res: any) => void): void {
-    const options: RequestOptions = {
+  private async request(config: AxiosRequestConfig): Promise<any> {
+    try {
+      const response = await axios(config);
+      return response.data;
+    } catch (error: any) {
+      if (error.response) {
+        throw error.response.data;
+      } else {
+        throw error.message;
+      }
+    }
+  }
+
+  async get(path: string): Promise<any> {
+    const config: AxiosRequestConfig = {
       method: 'GET',
-      uri: this.constructUrl(path),
+      url: this.constructUrl(path),
       headers: { 'x-api-key': this.opts.key },
     };
-
-    this.request(options, (err, res) => {
-      if (err) {
-        return callback(err, res);
-      }
-      let body = res.body;
-      try {
-        body = JSON.parse(body);
-      } catch (e) {
-        console.error('Error parsing data:', e, body);
-      }
-      callback(err, body);
-    });
+    return this.request(config);
   }
 
-  post(path: string, body: Record<string, any>, callback: (err: any, res: any) => void): void {
-    const options: RequestOptions = {
+  async post(path: string, body: Record<string, any>): Promise<any> {
+    const config: AxiosRequestConfig = {
       method: 'POST',
-      uri: this.constructUrl(path),
-      body: JSON.stringify(body),
+      url: this.constructUrl(path),
       headers: {
         'x-api-key': this.opts.key,
-        'content-type': 'application/json',
+        'Content-Type': 'application/json',
       },
+      data: body,
     };
-
-    this.request(options, (err, res) => {
-      if (err) {
-        return callback(err, res);
-      }
-      let parsedBody = res.body;
-      try {
-        parsedBody = JSON.parse(parsedBody);
-      } catch (e) {
-        console.error('Error parsing data:', e, parsedBody);
-      }
-      callback(err, parsedBody);
-    });
+    return this.request(config);
   }
 
-  getInfo(): Promise<any> {
-    return new Promise((resolve, reject) => {
-      this.get('/info', (err, data) => {
-        if (err) reject(err);
-        else resolve(data);
-      });
-    });
+  async getInfo(): Promise<any> {
+    return this.get('/info');
   }
 
-  getBlock(numberOrHash: string | number): Promise<any> {
+  async getBlock(numberOrHash: string | number): Promise<any> {
     if (this.cacheBlock[numberOrHash]) {
-      return Promise.resolve(this.cacheBlock[numberOrHash]);
+      return this.cacheBlock[numberOrHash];
     }
 
-    return new Promise((resolve, reject) => {
-      this.get(`/block/${numberOrHash}`, (err, block) => {
-        if (err) return reject(err);
-        if (block.errorCode) return reject({ ...block, block: numberOrHash });
-        this.cacheBlock[block.hash] = this.cacheBlock[block.height] = this.cacheBlock[numberOrHash] = block;
-        resolve(block);
-      });
-    });
+    const block = await this.get(`/block/${numberOrHash}`);
+    if (block.errorCode) {
+      throw { ...block, block: numberOrHash };
+    }
+    this.cacheBlock[block.hash] = this.cacheBlock[block.height] = this.cacheBlock[numberOrHash] = block;
+    return block;
   }
 
-  getTx(hash: string): Promise<any> {
+  async getTx(hash: string): Promise<any> {
     if (this.cacheTx[hash]) {
-      return Promise.resolve(this.cacheTx[hash]);
+      return this.cacheTx[hash];
     }
 
-    return new Promise((resolve, reject) => {
-      this.get(`/transaction/${hash}`, (err, tx) => {
-        if (err) return reject(err);
-        this.cacheTx[tx.hash] = tx;
-        resolve(tx);
-      });
-    });
+    const tx = await this.get(`/transaction/${hash}`);
+    this.cacheTx[tx.hash] = tx;
+    return tx;
   }
 
-  getBalance(address: string): Promise<string> {
-    return new Promise((resolve, reject) => {
-      this.get(`/address/balance/${address}`, (err, data) => {
-        if (err) return reject(err);
-        const balance = Number(decShift(data.incoming, 8)) - Number(decShift(data.outgoing, 8));
-        resolve(decShift(balance, -8));
-      });
-    });
+  async getBalance(address: string): Promise<string> {
+    const data = await this.get(`/address/balance/${address}`);
+    const balance = Number(decShift(data.incoming, 8)) - Number(decShift(data.outgoing, 8));
+    return decShift(balance, -8);
   }
 
-  getUnspents(address: string): Promise<any[]> {
-    return new Promise((resolve, reject) => {
-      if (this.bc) {
-        this.bc.get(`/addrs/${address}?unspentOnly=true`, (err: any, data: any) => {
-          if (err) return reject(err);
-          const unspents = data.txrefs || [];
-          unspents.balance = data.final_balance;
-          resolve(unspents);
-        });
-      } else {
-        this.get(`/transaction/address/${address}?pageSize=50`, (err, txs) => {
-          if (err) return reject(err);
-          const unspents = BlockchainClient.extractUnspents(txs, address);
-          resolve(unspents);
-        });
-      }
-    });
+  async getUnspents(address: string): Promise<any[]> {
+    if (this.bc) {
+      const data = await this.bc.get(`/addrs/${address}?unspentOnly=true`);
+      const unspents = data.txrefs || [];
+      unspents.balance = data.final_balance;
+      return unspents;
+    } else {
+      const txs = await this.get(`/transaction/address/${address}?pageSize=50`);
+      return BlockchainClient.extractUnspents(txs, address);
+    }
   }
 
   private static extractUnspents(txs: any[], address: string): any[] {
@@ -184,29 +136,18 @@ class BlockchainClient {
     return unspents;
   }
 
-  getTxs(address: string, pageSize = 50, offset = 0): Promise<any[]> {
-    return new Promise((resolve, reject) => {
-      this.get(`/transaction/address/${address}?pageSize=${pageSize}&offset=${offset}`, (err, txs) => {
-        if (err) reject(err);
-        else resolve(txs);
-      });
-    });
+  async getTxs(address: string, pageSize = 50, offset = 0): Promise<any[]> {
+    return this.get(`/transaction/address/${address}?pageSize=${pageSize}&offset=${offset}`);
   }
 
-  sendTx(txHex: string): Promise<any> {
-    return new Promise((resolve, reject) => {
-      if (this.bc) {
-        this.bc.post('/txs/push', { tx: txHex }, (unknown: any, { error, tx }: any) => {
-          if (error) reject(error);
-          else resolve(tx);
-        });
-      } else {
-        this.post('/broadcast', { txData: txHex }, (err, res) => {
-          if (err) reject(err);
-          else resolve(res);
-        });
-      }
-    });
+  async sendTx(txHex: string): Promise<any> {
+    if (this.bc) {
+      const { error, tx } = await this.bc.post('/txs/push', { tx: txHex });
+      if (error) throw error;
+      return tx;
+    } else {
+      return this.post('/broadcast', { txData: txHex });
+    }
   }
 }
 

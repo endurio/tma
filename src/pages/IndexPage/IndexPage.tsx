@@ -32,6 +32,7 @@ export const useAppContext = () => {
 };
 
 export const IndexPage: FC = () => {
+  
   const [web3Account, setWeb3Account] = useState<IWeb3Account>();
   const [isFetchingWeb3Account, setIsFetchingWeb3Account] = useState<boolean>(true);
 
