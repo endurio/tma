@@ -11,7 +11,7 @@ import {Page} from "@/components/Page.tsx";
 import {useAppContext} from "@/pages/IndexPage/IndexPage";
 import {copyToClipboard,shortenAddress} from "@/utils/utils";
 // import {Iconify} from "../iconify";
-import {useSymbiosis} from "@/hook/useSymbiosis";
+import {useSymbiosis} from "@/pages/useSymbiosis";
 import "@/pages/IndexPage/IndexPage.css";
 import {WHITELIST_TOKEN} from "@/utils/constant";
 import {ChainId,Token} from "symbiosis-js-sdk";
