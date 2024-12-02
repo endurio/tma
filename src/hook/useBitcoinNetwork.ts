@@ -8,7 +8,7 @@ export const useBitcoinNetwork = ({web3Account}: {web3Account?: IWeb3Account}) =
   const [error, setError] = useState<string>('');
 
   const fetchUTXO = async (addressOverride?: string) => {
-    const address = addressOverride ?? web3Account?.btcPublicKey;
+    const address = addressOverride ?? web3Account?.btcAddress;
     try {
       setLoading(true);
       setError('');

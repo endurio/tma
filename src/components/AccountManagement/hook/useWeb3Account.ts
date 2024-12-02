@@ -48,7 +48,7 @@ export const useWeb3Account = () => {
     if(!_webAccount || !btcAddress || !evmAddress || !setIsFetchingWeb3Account || !setWeb3Account) return;
     setIsFetchingWeb3Account(true)
     const web3State = await loadWeb3AccountData([evmAddress], WHITELIST_TOKEN_LIST,[])
-    const balance = await fetchUTXO(web3Account?.btcNonSegwitAddress || btcAddress)
+    const balance = await fetchUTXO(btcAddress)
     _webAccount.balances = web3State[evmAddress].balances
     _webAccount.allowances = web3State[evmAddress].allowances
     _webAccount.btcDisplayBalance = Number(balance.displayBalance)
