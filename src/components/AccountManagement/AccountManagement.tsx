@@ -67,26 +67,12 @@ export const AccountManagement: FC = () => {
                   {shortenAddress(web3Account?.btcAddress)}
                 </Button>
               </div>
-              {/* <div>
-                <Button
-                  style={{ width: "100vw" }}
-                  onClick={() => copyToClipboard(web3Account?.btcNonSegwitAddress || "")}
-                  before={<Iconify icon="token:bitcoin" />}
-                  disabled={isFetchingWeb3Account}
-                  after={
-                    <Iconify icon={"material-symbols:content-copy-outline"} />
-                  }
-                >
-                  {shortenAddress(web3Account?.btcNonSegwitAddress)}
-                </Button>
-              </div> */}
               <Divider />
               <div>
               {Object.keys(WHITELIST_TOKEN).map((symbol, _: number) => {
                 return (
                  <div>
                    <Chip style={{padding: 3, background: 'none'}} before={<div>
-                    {/* <Iconify icon={`token-branded:arbi`}/> */}
                     <Iconify icon={`token-branded:${symbol.toLowerCase()}`}/>
                    </div>}>{symbol}: {zerofy(
                         Number(
@@ -124,12 +110,6 @@ export const AccountManagement: FC = () => {
               }}
               loading={swapLoading}
               before={<Iconify icon="material-symbols:swap-horiz-rounded" />}
-              // after={
-              //   <div>
-              //     <Iconify icon={`token:arbi`} />
-              //     <Iconify icon={`token:btc`} />
-              // </div>
-              // }
               disabled={isFetchingWeb3Account}
               className="w-50"
             >
