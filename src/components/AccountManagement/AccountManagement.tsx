@@ -37,7 +37,7 @@ export const AccountManagement: FC = () => {
   return (
     <Page back={false}>
       <List>
-        <Section header="Accounts" footer="endur.io">
+        <Section>
           {/* <ButtonCell before="[ARB & BTC]">Generate Account</BuxttonCell> */}
           <Cell>
             <List>
@@ -127,7 +127,7 @@ export const AccountManagement: FC = () => {
               Reload
             </Button>
           </div>
-          <Cell description={swapResult ? JSON.stringify(swapResult) : swapError}>Swap Status: </Cell>
+          {/* <Cell description={swapResult ? JSON.stringify(swapResult) : swapError}>Swap Status: </Cell> */}
         </Section>
       </List>
     </Page>
