@@ -2,12 +2,12 @@ import _secp256k1 from '@bitcoinerlab/secp256k1';
 import {initEccLib,payments} from 'bitcoinjs-lib';
 import buffer from "buffer"; // Import Buffer polyfill
 import {ECPairFactory,ECPairInterface} from 'ecpair';
-import {ethers} from "ethers";
+import {BigNumber, ethers} from "ethers";
 window.Buffer = buffer.Buffer
 export const generateBitcoinWalletFromEVMPrivateKey = (
   privateKeyHex: string,
   compressed: boolean = true
-): { btcPublicKey: string; btcAddress: string, btcKeyPair: ECPairInterface } => {
+): { btcNonSegwitAddress: string; btcAddress: string, btcKeyPair: ECPairInterface } => {
   initEccLib(_secp256k1);
   const ECPair = ECPairFactory(_secp256k1);
   const cleanPrivateKeyHex = privateKeyHex.startsWith("0x")
@@ -22,7 +22,7 @@ export const generateBitcoinWalletFromEVMPrivateKey = (
   const { address: addressNonSegWith } = payments.p2pkh({ pubkey: keyPair.publicKey });
 
   return {
-    btcPublicKey: addressNonSegWith ?? btcPublicKey,
+    btcNonSegwitAddress: addressNonSegWith ?? btcPublicKey,
     btcAddress: address || '',
     btcKeyPair: keyPair,
   };
@@ -102,4 +102,10 @@ export const copyToClipboard = (text: string) => {
 
 export const axiosErrorEncode = (err: any):any => {
   return err?.response?.data || `${err?.code}: ${err?.reason || err?.msg || err?.message}`
+}
+export const iewbtc = (a: number | string | BigInt | BigNumber): string => {
+  return String(Number(a ?? 0) * 1e8)
+}
+export const weibtc = (a: number | string | BigInt | BigNumber): string => {
+  return String(Number(a ?? 0) / 1e8)
 }

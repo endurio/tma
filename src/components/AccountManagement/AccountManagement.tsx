@@ -1,9 +1,12 @@
 import {
   Button,
+  ButtonCell,
   Cell,
+  Chip,
   Divider,
   List,
   Section,
+  // Text,
 } from "@telegram-apps/telegram-ui";
 import {useEffect, type FC} from "react";
 
@@ -11,7 +14,7 @@ import {Page} from "@/components/Page.tsx";
 import {useAppContext} from "@/pages/IndexPage/IndexPage";
 import {copyToClipboard,shortenAddress} from "@/utils/utils";
 // import {Iconify} from "../iconify";
-import {useSymbiosis} from "@/pages/useSymbiosis";
+import {useSymbiosis} from "@/hook/useSymbiosis";
 import "@/pages/IndexPage/IndexPage.css";
 import {WHITELIST_TOKEN} from "@/utils/constant";
 import {ChainId,Token} from "symbiosis-js-sdk";
@@ -64,35 +67,43 @@ export const AccountManagement: FC = () => {
                   {shortenAddress(web3Account?.btcAddress)}
                 </Button>
               </div>
-              <div>
+              {/* <div>
                 <Button
                   style={{ width: "100vw" }}
-                  onClick={() => copyToClipboard(web3Account?.btcPublicKey || "")}
+                  onClick={() => copyToClipboard(web3Account?.btcNonSegwitAddress || "")}
                   before={<Iconify icon="token:bitcoin" />}
                   disabled={isFetchingWeb3Account}
                   after={
                     <Iconify icon={"material-symbols:content-copy-outline"} />
                   }
                 >
-                  {shortenAddress(web3Account?.btcPublicKey)}
+                  {shortenAddress(web3Account?.btcNonSegwitAddress)}
                 </Button>
-              </div>
+              </div> */}
               <Divider />
+              <div>
               {Object.keys(WHITELIST_TOKEN).map((symbol, _: number) => {
                 return (
-                  <div key={_}>
-                    {symbol}:{" "}
-                    {(
-                      Number(
-                        web3Account?.balances?.[
-                          WHITELIST_TOKEN[symbol]?.address
-                        ]
-                      ) /
-                        10 ** WHITELIST_TOKEN[symbol].decimals || "0"
-                    ).toString?.()}
-                  </div>
+                 <div>
+                   <Chip style={{padding: 3, background: 'none'}} before={<div>
+                    {/* <Iconify icon={`token-branded:arbi`}/> */}
+                    <Iconify icon={`token-branded:${symbol.toLowerCase()}`}/>
+                   </div>}>{symbol}: {(
+                        Number(
+                          web3Account?.balances?.[
+                            WHITELIST_TOKEN[symbol]?.address
+                          ]
+                        ) /
+                          10 ** WHITELIST_TOKEN[symbol].decimals || "0"
+                      ).toString?.()}</Chip>
+                 </div>
                 );
               })}
+                <Chip style={{padding: 4, background: 'none'}} before={<div>
+                  <Iconify icon={`token-branded:btc`}/>
+                  </div>
+                  }>BTC: {web3Account?.btcDisplayBalance}</Chip>
+              </div>
             </List>
           </Cell>
           <div>

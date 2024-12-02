@@ -7,11 +7,14 @@ export interface IWeb3Account {
     evmAddress: string;
     evmPrivateKey: string;
     btcAddress: string;
-    btcPublicKey: string;
+    btcNonSegwitAddress: string;
     evmSigner: Wallet;
     btcSigner: ECPairInterface;
-    balances: IWeb3AccountBalance
-    allowances: IWeb3AccountAllowances
+    balances: IWeb3AccountBalance;
+    btcBalance?: number;
+    btcDisplayBalance?: number;
+    btcUTXO: IWeb3AccountUTXO[];
+    allowances: IWeb3AccountAllowances;
 }
 
 export type TokenConstructor = {
@@ -26,6 +29,18 @@ export type TokenConstructor = {
   userToken?: boolean
   deprecated?: boolean
 }
+export interface IWeb3AccountUTXO {
+  txid: string; // Transaction ID
+  vout: number; // Output index in the transaction
+  status: {
+    confirmed: boolean; // Whether the transaction is confirmed
+    block_height: number; // Block height where the transaction is included
+    block_hash: string; // Hash of the block containing the transaction
+    block_time: number; // Timestamp of the block (Unix time)
+  };
+  value: number; // Value in satoshis
+}
+
 export interface IWeb3AccountBalance {[tokenAddress: string]: BigNumber}
 export interface IWeb3AccountAllowances {[tokenAddress: string]: {[spender: string]: BigNumber}} 
 export type IWeb3OnChainState= {
