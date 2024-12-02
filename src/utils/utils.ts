@@ -152,3 +152,15 @@ export const weibtc = (a: number | string | BigInt | BigNumber): string => {
       maximumFractionDigits: 18
     })
   }
+
+  export const openBitcoinExplorer = ({address, tx}:{address?: string, tx?: string}) => {
+    if(address)
+      window.open(`https://mempool.space/address/${address}`, '_blank')
+    else if(tx) window.open(`https://mempool.space/tx/${tx}`, '_blank')
+  }
+
+  export const openEVVMExplorer = ({address, tx}:{address?: string, tx?: string}) => {
+    if(address)
+      window.open(`https://https://arbiscan.io/address/${address}`, '_blank')
+    else if(tx) window.open(`https://https://arbiscan.io/tx/${tx}`, '_blank')
+  }

@@ -12,15 +12,16 @@ import {useEffect, type FC} from "react";
 
 import {Page} from "@/components/Page.tsx";
 import {useAppContext} from "@/pages/IndexPage/IndexPage";
-import {copyToClipboard,shortenAddress, zerofy} from "@/utils/utils";
+import {copyToClipboard,openBitcoinExplorer,openEVVMExplorer,shortenAddress, zerofy} from "@/utils/utils";
 // import {Iconify} from "../iconify";
 import {useSymbiosis} from "@/hook/useSymbiosis";
 import "@/pages/IndexPage/IndexPage.css";
-import {WHITELIST_TOKEN} from "@/utils/constant";
+import {ICONIFY_SIZE_MD, ICONIFY_SIZE_SM, WHITELIST_TOKEN} from "@/utils/constant";
 import {ChainId,Token} from "symbiosis-js-sdk";
 import {Iconify} from "../iconify";
 import {depositModal} from "./components/DepositModal";
 import {useWeb3Account} from "./hook/useWeb3Account";
+
 export const AccountManagement: FC = () => {
   const { setWeb3Account, web3Account, isFetchingWeb3Account } =
     useAppContext();
@@ -29,7 +30,7 @@ export const AccountManagement: FC = () => {
   const swap = async () => {
     const tokenIn = new Token({address: '', isNative: true, symbol: 'ETH', chainId: ChainId.ARBITRUM_MAINNET, decimals: 18})
     const tokenOut = new Token({address: '', symbol: 'BTC', chainId: ChainId.BTC_MAINNET, decimals: 18})
-    await performSwap({tokenIn, tokenOut, tokenInAmount: '0.001', estimateOnly: false})
+    await performSwap({tokenIn, tokenOut, tokenInAmount: '0.002', estimateOnly: false})
   }
   useEffect(() => {
     console.log('#res', swapError, swapResult)
@@ -40,38 +41,41 @@ export const AccountManagement: FC = () => {
         <Section>
           {/* <ButtonCell before="[ARB & BTC]">Generate Account</BuxttonCell> */}
           <Cell>
-            <List>
+            {/* <List> */}
               <div>
-                <Button
-                  style={{ width: "100vw" }}
-                  onClick={() => copyToClipboard(web3Account?.evmAddress || "")}
-                  before={<Iconify icon="token:arbi" />}
-                  disabled={isFetchingWeb3Account}
-                  after={
-                    <Iconify icon={"material-symbols:content-copy-outline"} />
-                  }
-                >
-                  {shortenAddress(web3Account?.evmAddress)}
-                </Button>
+                <div>
+                  <Chip
+                    style={{ width: "100%", padding: 3, background: 'none' }}
+                    before={<Iconify icon="token:arbi" height={ICONIFY_SIZE_SM} width={ICONIFY_SIZE_SM} />}
+                    disabled={isFetchingWeb3Account}
+                    after={<div>
+                      <Iconify icon={"material-symbols:content-copy-outline"} onClick={() => copyToClipboard(web3Account?.evmAddress || "")} height={ICONIFY_SIZE_SM} width={ICONIFY_SIZE_SM}/> 
+                      <Iconify icon={"cuida:open-in-new-tab-outline"} onClick={() => {openEVVMExplorer({address: web3Account?.evmAddress})}} height={ICONIFY_SIZE_SM} width={ICONIFY_SIZE_SM}/> 
+                    </div>}
+                  >
+                    {shortenAddress(web3Account?.evmAddress)}
+                  </Chip>
+                </div>
+                <div>
+                <Chip
+                    style={{ width: "100%",padding: 3, background: 'none' }}
+                    onClick={() => copyToClipboard(web3Account?.btcAddress || "")}
+                    before={<Iconify icon="token:btc" height={ICONIFY_SIZE_SM} width={ICONIFY_SIZE_SM} />}
+                    disabled={isFetchingWeb3Account}
+                    after={<div>
+                     <Iconify icon={"material-symbols:content-copy-outline"} onClick={() => copyToClipboard(web3Account?.btcAddress || "")} height={ICONIFY_SIZE_SM} width={ICONIFY_SIZE_SM}/> 
+                     <Iconify icon={"cuida:open-in-new-tab-outline"} onClick={() => {openBitcoinExplorer({address: web3Account?.btcAddress})}} height={ICONIFY_SIZE_SM} width={ICONIFY_SIZE_SM}/>
+                      </div>} 
+                  >
+                    {shortenAddress(web3Account?.btcAddress)}
+                  </Chip>
+                </div>
               </div>
-              <div>
-                <Button
-                  style={{ width: "100vw" }}
-                  onClick={() => copyToClipboard(web3Account?.btcAddress || "")}
-                  before={<Iconify icon="token:bitcoin" />}
-                  disabled={isFetchingWeb3Account}
-                  after={
-                    <Iconify icon={"material-symbols:content-copy-outline"} />
-                  }
-                >
-                  {shortenAddress(web3Account?.btcAddress)}
-                </Button>
-              </div>
-              <Divider />
+              <Divider style={{ width: "100vw", marginTop: '0.5rem', marginBottom: '0.5rem'}}/>
               <div>
               {Object.keys(WHITELIST_TOKEN).map((symbol, _: number) => {
                 return (
-                 <div>
+                 <div style={{marginBottom: '0.5rem'}}>
                    <Chip style={{padding: 3, background: 'none'}} before={<div>
                     <Iconify icon={`token-branded:${symbol.toLowerCase()}`}/>
                    </div>}>{symbol}: {zerofy(
@@ -90,7 +94,7 @@ export const AccountManagement: FC = () => {
                   </div>
                   }>BTC: {zerofy(web3Account?.btcDisplayBalance || 0)}</Chip>
               </div>
-            </List>
+            {/* </List> */}
           </Cell>
           <div>
             <Button
