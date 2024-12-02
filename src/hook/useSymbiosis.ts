@@ -1,6 +1,6 @@
 import {useWeb3Account} from "@/components/AccountManagement/hook/useWeb3Account";
 import {SwapExactInResultResponse} from "@/type";
-import {findSymbiosisTokens,swapCrossChain} from "@/utils/symbiosis";
+import {buildConstructorTokens, findSymbiosisTokens,swapCrossChain} from "@/utils/symbiosis";
 import {axiosErrorEncode} from "@/utils/utils";
 import {BigNumber,providers} from "ethers";
 import {useState} from "react";
@@ -22,28 +22,26 @@ export const useSymbiosis = () => {
         symbol: tokenIn.symbol ?? 'ETH',
         name: tokenIn.name,
         chainId: tokenIn.chainId,
-      })[0];
+      })[0] || buildConstructorTokens(tokenIn);
       const tokenOutConstructor = findSymbiosisTokens({
         tokenAddress: tokenOut.address,
         symbol: tokenOut.symbol ?? 'BTC',
         name: tokenOut.name,
         chainId: tokenOut.chainId,
-      })[0];
+      })[0] || buildConstructorTokens(tokenOut);
 
       if (!tokenIn || !tokenOut) {
         throw new Error("Token details not found for swap.");
       }
 
       const tokenInAmountWithDecimals = String(Number(tokenInAmount) * 10 ** (tokenIn?.decimals || 18));
-
       if (tokenIn.isNative) tokenInConstructor.address = "";
       if (tokenOut.isNative) tokenOutConstructor.address = "";
 
       if (!account) {
         throw new Error("Account not initialized.");
       }
-
-      const result = await swapCrossChain({
+      const params = {
         tokenIn: tokenInConstructor,
         tokenOut: tokenOutConstructor,
         tokenInAmount: tokenInAmountWithDecimals,
@@ -51,7 +49,9 @@ export const useSymbiosis = () => {
         estimateOnly,
         to: tokenOut.chainId === ChainId.BTC_MAINNET ? account.btcAddress : account.evmAddress,
         slippage: (slippage || 1) * 100,
-      });
+      }
+      console.log('#params', params)
+      const result = await swapCrossChain(params);
       console.log('#result', result)
       if (typeof result === "string") {
         setError(result);

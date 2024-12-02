@@ -3,8 +3,9 @@ import {JSONProvider,symbiosis} from "@/config";
 import {SwapExactInResultResponse,TokenConstructor} from "@/type";
 import axios from "axios";
 import {BigNumber,Contract,providers,Wallet} from "ethers";
-import {SYMBIOSIS_URL_API} from "./constant";
+import {NATIVE_ADDRESS, SYMBIOSIS_URL_API} from "./constant";
 import {axiosErrorEncode} from "./utils";
+import {Token} from "symbiosis-js-sdk";
 export const fetchSymbiosisRouter = async ({
   tokenIn,
   tokenOut,
@@ -131,7 +132,16 @@ export const swapCrossChain = async ({
     return axiosErrorEncode(error)
   }
 };
-
+export const buildConstructorTokens = (token: Token): TokenConstructor => {
+  return {
+      name: token.name ?? token.symbol,
+      symbol: token.symbol,
+      address: token.address === NATIVE_ADDRESS ? '' : token.address,
+      decimals: token.decimals,
+      chainId: token.chainId,
+      isNative: token.isNative,
+    }
+}
 export const findSymbiosisTokens = ({
     tokenAddress,
     symbol,

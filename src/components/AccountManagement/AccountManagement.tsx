@@ -75,6 +75,7 @@ export const AccountManagement: FC = () => {
               <Divider style={{ width: "100vw", marginTop: '0.5rem', marginBottom: '0.5rem'}}/>
               <div>
               {Object.keys(WHITELIST_TOKEN).map((symbol, _: number) => {
+                if(WHITELIST_TOKEN[symbol].chainId === ChainId.BTC_MAINNET) return;
                 return (
                  <div style={{marginBottom: '0.5rem'}}>
                    <Chip style={{padding: 3, background: 'none'}} before={<div>
