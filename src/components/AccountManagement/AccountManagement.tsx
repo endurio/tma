@@ -21,6 +21,7 @@ import {ChainId,Token} from "symbiosis-js-sdk";
 import {Iconify} from "../iconify";
 import {depositModal} from "./components/DepositModal";
 import {useWeb3Account} from "./hook/useWeb3Account";
+import {swapModal} from "./components/SwapModal";
 
 export const AccountManagement: FC = () => {
   const { setWeb3Account, web3Account, isFetchingWeb3Account } =
@@ -110,14 +111,15 @@ export const AccountManagement: FC = () => {
             </Button>
             <Button
               onClick={() => {
-                swap()
+                // swap()
+                swapModal(true)
               }}
               loading={swapLoading}
               before={<Iconify icon="material-symbols:swap-horiz-rounded" />}
               disabled={isFetchingWeb3Account}
               className="w-50"
             >
-              Swap (0.001 ETH)
+              Swap
             </Button>
             <Button
               onClick={async () => {
