@@ -30,7 +30,7 @@ import { BigNumber, providers } from "ethers";
 let _modal: (props: { visible: boolean }) => void;
 
 export const SwapModal = () => {
-  const [visible, setVisible] = useState(true);
+  const [visible, setVisible] = useState(false);
   const [tokenAmountIn, setTokenAmountIn] = useState<string>("");
   //   const [tokenAmountOut, settokenAmountOut] = useState<string>("");
 

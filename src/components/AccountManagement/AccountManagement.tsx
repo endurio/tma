@@ -1,38 +1,32 @@
 import {
   Button,
-  ButtonCell,
   Cell,
   Chip,
   Divider,
   List,
-  Section,
-  // Text,
+  Section
 } from "@telegram-apps/telegram-ui";
-import {useEffect, type FC} from "react";
+import {useEffect,type FC} from "react";
 
 import {Page} from "@/components/Page.tsx";
 import {useAppContext} from "@/pages/IndexPage/IndexPage";
-import {copyToClipboard,openBitcoinExplorer,openEVVMExplorer,shortenAddress, zerofy} from "@/utils/utils";
+import {copyToClipboard,openBitcoinExplorer,openEVVMExplorer,shortenAddress,zerofy} from "@/utils/utils";
 // import {Iconify} from "../iconify";
 import {useSymbiosis} from "@/hook/useSymbiosis";
 import "@/pages/IndexPage/IndexPage.css";
-import {FONT_SIZE_MD, FONT_SIZE_SM, WHITELIST_TOKEN} from "@/utils/constant";
-import {ChainId,Token} from "symbiosis-js-sdk";
+import {FONT_SIZE_SM,WHITELIST_TOKEN} from "@/utils/constant";
+import {ChainId} from "symbiosis-js-sdk";
 import {Iconify} from "../iconify";
 import {depositModal} from "./components/DepositModal";
-import {useWeb3Account} from "./hook/useWeb3Account";
 import {swapModal} from "./components/SwapModal";
+import {useWeb3Account} from "./hook/useWeb3Account";
 
 export const AccountManagement: FC = () => {
   const { setWeb3Account, web3Account, isFetchingWeb3Account } =
     useAppContext();
   const { fetchWeb3AccountState } = useWeb3Account();
   const {swapLoading, swapError, swapResult, performSwap} = useSymbiosis()
-  const swap = async () => {
-    const tokenIn = new Token({address: '', isNative: true, symbol: 'ETH', chainId: ChainId.ARBITRUM_MAINNET, decimals: 18})
-    const tokenOut = new Token({address: '', symbol: 'BTC', chainId: ChainId.BTC_MAINNET, decimals: 18})
-    await performSwap({tokenIn, tokenOut, tokenAmountIn: '0.002', estimateOnly: false})
-  }
+
   useEffect(() => {
     console.log('#res', swapError, swapResult)
   },[swapError, swapResult ])
