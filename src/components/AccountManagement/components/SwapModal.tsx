@@ -252,7 +252,7 @@ export const SwapModal = () => {
             <Input
               className="w-100"
               style={{
-                fontSize: swapLoading ? ICONIFY_SIZE_MD : ICONIFY_SIZE_LG,
+                fontSize: !tokenAmountOut && swapLoading ? ICONIFY_SIZE_MD : ICONIFY_SIZE_LG,
               }}
               value={tokenAmountOut}
               //   before={
