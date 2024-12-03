@@ -1,3 +1,4 @@
+import {useBitcoinNetwork} from "@/hook/useBitcoinNetwork";
 import {useAppContext} from "@/pages/IndexPage/IndexPage";
 import {IWeb3Account} from "@/type";
 import {WHITELIST_TOKEN_LIST} from "@/utils/constant";
@@ -8,6 +9,7 @@ import {useEffect} from "react";
 
 export const useWeb3Account = () => {
   const {web3Account, setWeb3Account, isFetchingWeb3Account, setIsFetchingWeb3Account} = useAppContext()
+  const {fetchUTXO} = useBitcoinNetwork({web3Account})
   const generateWeb3Account = (): IWeb3Account => {
     const evmWallet = generateEVMWallet()
     const btcWallet = generateBitcoinWalletFromEVMPrivateKey(evmWallet.privateKey)
@@ -15,11 +17,12 @@ export const useWeb3Account = () => {
       evmAddress: evmWallet.address,
       evmPrivateKey: evmWallet.privateKey,
       btcAddress: btcWallet.btcAddress,
-      btcPublicKey: btcWallet.btcPublicKey,
+      btcNonSegwitAddress: btcWallet.btcNonSegwitAddress,
       evmSigner: evmWallet.wallet,
       btcSigner: btcWallet.btcKeyPair,
       balances: {},
       allowances: {},
+      btcUTXO: []
     }
   }
   const getWeb3AccountFromPrivateKey = (privateKey: string): IWeb3Account => {
@@ -30,28 +33,28 @@ export const useWeb3Account = () => {
       evmAddress: evmWallet.address,
       evmPrivateKey: evmWallet.privateKey,
       btcAddress: btcWallet.btcAddress,
-      btcPublicKey: btcWallet.btcPublicKey,
+      btcNonSegwitAddress: btcWallet.btcNonSegwitAddress,
       evmSigner: evmWallet.wallet,
       btcSigner: btcWallet.btcKeyPair,
       balances: {},
       allowances: {},
+      btcUTXO: []
     }
   }
   const fetchWeb3AccountState = async (web3AccountOverride?: IWeb3Account) => {
     const evmAddress = web3AccountOverride?.evmAddress || web3Account?.evmAddress
+    const btcAddress = web3AccountOverride?.btcAddress || web3Account?.btcAddress
     const _webAccount = web3AccountOverride || web3Account
-    if(!_webAccount || !evmAddress || !setIsFetchingWeb3Account || !setWeb3Account) return;
-    // client.getUnspents(web3Account?.btcPublicKey ?? '')
-    // .catch(console.error)
-    // .then((unspents) => {
-    //   console.log('#unspent', unspents)
-    // })
+    if(!_webAccount || !btcAddress || !evmAddress || !setIsFetchingWeb3Account || !setWeb3Account) return;
     setIsFetchingWeb3Account(true)
     const web3State = await loadWeb3AccountData([evmAddress], WHITELIST_TOKEN_LIST,[])
+    const balance = await fetchUTXO(btcAddress)
     _webAccount.balances = web3State[evmAddress].balances
     _webAccount.allowances = web3State[evmAddress].allowances
-    console.log('#state', _webAccount)
-
+    _webAccount.btcDisplayBalance = Number(balance.displayBalance)
+    _webAccount.btcBalance = Number(balance.balance)
+    _webAccount.btcUTXO = balance.utxo
+    console.log('#_webAccount', _webAccount)
     setWeb3Account(_webAccount)
     setIsFetchingWeb3Account(false)
     return _webAccount

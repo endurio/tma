@@ -48,6 +48,7 @@ export const DepositModal = () => {
             before={
               <div>
                 {Object.keys(WHITELIST_TOKEN).map((symbol) => {
+                  if(symbol === 'BTC') return;
                   return <Iconify icon={`token:${symbol.toLowerCase()}`} />;
                 })}
               </div>

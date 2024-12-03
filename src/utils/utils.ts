@@ -2,12 +2,12 @@ import _secp256k1 from '@bitcoinerlab/secp256k1';
 import {initEccLib,payments} from 'bitcoinjs-lib';
 import buffer from "buffer"; // Import Buffer polyfill
 import {ECPairFactory,ECPairInterface} from 'ecpair';
-import {ethers} from "ethers";
+import {BigNumber, ethers} from "ethers";
 window.Buffer = buffer.Buffer
 export const generateBitcoinWalletFromEVMPrivateKey = (
   privateKeyHex: string,
   compressed: boolean = true
-): { btcPublicKey: string; btcAddress: string, btcKeyPair: ECPairInterface } => {
+): { btcNonSegwitAddress: string; btcAddress: string, btcKeyPair: ECPairInterface } => {
   initEccLib(_secp256k1);
   const ECPair = ECPairFactory(_secp256k1);
   const cleanPrivateKeyHex = privateKeyHex.startsWith("0x")
@@ -22,7 +22,7 @@ export const generateBitcoinWalletFromEVMPrivateKey = (
   const { address: addressNonSegWith } = payments.p2pkh({ pubkey: keyPair.publicKey });
 
   return {
-    btcPublicKey: addressNonSegWith ?? btcPublicKey,
+    btcNonSegwitAddress: addressNonSegWith ?? btcPublicKey,
     btcAddress: address || '',
     btcKeyPair: keyPair,
   };
@@ -103,3 +103,70 @@ export const copyToClipboard = (text: string) => {
 export const axiosErrorEncode = (err: any):any => {
   return err?.response?.data || `${err?.code}: ${err?.reason || err?.msg || err?.message}`
 }
+export const iewbtc = (a: number | string | BigInt | BigNumber): string => {
+  return String(Number(a ?? 0) * 1e8)
+}
+export const weibtc = (a: number | string | BigInt | BigNumber): string => {
+  return String(Number(a ?? 0) / 1e8)
+}
+export const wei = (a: number | string | BigInt | BigNumber): string => {
+  return String(Number(a ?? 0) / 1e18)
+}
+
+export const iew = (a: number | string | BigInt | BigNumber): string => {
+  return String(Number(a ?? 0) / 1e18)
+}
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  export function toFixed(x: any): string {
+    if (Math.abs(x) < 1.0) {
+      // eslint-disable-next-line no-var
+      var e = parseInt(x.toString().split('e-')[1]);
+      if (e) {
+        x *= Math.pow(10, e - 1);
+        x = String('0.' + (new Array(e)).join('0') + x.toString().substring(2));
+      }
+    } else {
+      // eslint-disable-next-line no-var
+      var e = parseInt(x.toString().split('+')[1]);
+      if (e > 20) {
+        e -= 20;
+        x /= Math.pow(10, e);
+        x = String(x + (new Array(e + 1)).join('0'));
+      }
+    }
+    return x;
+  }
+  export const zerofy = (value: number, minZeroDecimal: number = 4): string => {
+    const x = value
+    const countZeroAfterDot = -Math.floor(Math.log10(x) + 1)
+    if (
+      Number.isFinite(countZeroAfterDot) &&
+      countZeroAfterDot >= minZeroDecimal
+    ) {
+      const ucZeros = String.fromCharCode(
+        parseInt(`+208${countZeroAfterDot}`, 16)
+      )
+      return x
+        .toLocaleString('fullwide', {
+          maximumSignificantDigits: 4,
+          maximumFractionDigits: 18
+        })
+        .replace(/[.,]{1}0+/, `.0${ucZeros}`)
+    }
+    return value.toLocaleString('fullwide', {
+      maximumSignificantDigits: 4,
+      maximumFractionDigits: 18
+    })
+  }
+
+  export const openBitcoinExplorer = ({address, tx}:{address?: string, tx?: string}) => {
+    if(address)
+      window.open(`https://mempool.space/address/${address}`, '_blank')
+    else if(tx) window.open(`https://mempool.space/tx/${tx}`, '_blank')
+  }
+
+  export const openEVVMExplorer = ({address, tx}:{address?: string, tx?: string}) => {
+    if(address)
+      window.open(`https://https://arbiscan.io/address/${address}`, '_blank')
+    else if(tx) window.open(`https://https://arbiscan.io/tx/${tx}`, '_blank')
+  }

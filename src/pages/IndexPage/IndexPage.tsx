@@ -7,6 +7,7 @@ import {IWeb3Account} from "@/type";
 import {InitComponent} from "./InitComponent";
 import {DepositModal} from "@/components/AccountManagement/components/DepositModal";
 import {WithdrawModal} from "@/components/AccountManagement/components/WithdrawModal";
+import {SwapModal} from "@/components/AccountManagement/components/SwapModal";
 
 interface AppContextType {
   web3Account?: IWeb3Account;
@@ -40,6 +41,7 @@ export const IndexPage: FC = () => {
     <AppContext.Provider value={{ web3Account, setWeb3Account, setIsFetchingWeb3Account, isFetchingWeb3Account }}>
       <InitComponent/>
       <DepositModal/>
+      <SwapModal/>
       <WithdrawModal/>
       <Page back={false}>
         <List>
