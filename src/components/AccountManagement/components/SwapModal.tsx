@@ -3,6 +3,7 @@ import {
   Cell,
   Chip,
   Input,
+  List,
   Modal,
   Section,
   Select,
@@ -23,15 +24,16 @@ import {
 import { Token } from "symbiosis-js-sdk";
 import "./index.css";
 import { useWeb3Account } from "../hook/useWeb3Account";
+import { zerofy } from "@/utils/utils";
 let _modal: (props: { visible: boolean }) => void;
 
 export const SwapModal = () => {
   const [visible, setVisible] = useState(true);
   const [tokenInAmount, setTokenInAmount] = useState<string>("");
   const [inputToken, setInputToken] = useState<string>("ETH");
+  const { account } = useWeb3Account();
   const [outputToken, setOutputToken] = useState<string>("USDC");
   const { performSwap, swapLoading, swapError, swapResult } = useSymbiosis();
-  const { account } = useWeb3Account();
 
   const tokensConstructions = useMemo(() => {
     const wlTokenIn = WHITELIST_TOKEN[inputToken];
@@ -93,101 +95,176 @@ export const SwapModal = () => {
   return (
     <Modal open={visible} trigger={undefined} onOpenChange={setVisible}>
       <Section>
-        <Chip
-          style={{ background: "none", border: "none" }}
-          after={
-            <Select
-              className="tab-dropdown-button"
-              value={inputToken}
-              before={
-                <Iconify
-                  icon={`token-branded:${inputToken.toLowerCase()}`}
-                  height={ICONIFY_SIZE_MD}
-                  width={ICONIFY_SIZE_MD}
-                />
+        <List>
+          <div>
+            <Cell
+              style={{ textAlign: "right", background: "none" }}
+              description={
+                <div>
+                  Balance:{" "}
+                  {inputToken === "BTC"
+                    ? zerofy(account?.btcDisplayBalance ?? 0)
+                    : zerofy(
+                        Number(
+                          account?.balances[
+                            WHITELIST_TOKEN[inputToken].address
+                          ] ?? 0
+                        ) /
+                          10 ** WHITELIST_TOKEN[inputToken].decimals
+                      )}
+                </div>
               }
-              style={{ cursor: "pointer" }}
-              onChange={(e) => {
-                setInputToken(e.currentTarget.value);
-              }}
-            >
-              {Object.keys(WHITELIST_TOKEN).map((symbol, _) => {
-                return (
-                  <option key={symbol} value={symbol}>
-                    {symbol}
-                  </option>
-                );
-              })}
-            </Select>
-          }
-        >
-          <Input
-            className="w-100"
-            value={tokenInAmount}
-            onChange={(e) => setTokenInAmount(e.target.value)}
-            placeholder="Enter Amount"
-            onBlur={handleBlur}
-          />
-        </Chip>
-        <Chip
-          style={{
-            width: "100%",
-            textAlign: "center",
-            border: "none",
-            background: "none",
-          }}
-        >
-          <Iconify
-            icon="material-symbols:swap-vert-rounded"
-            width={ICONIFY_SIZE_LG}
-            height={ICONIFY_SIZE_LG}
-          />
-        </Chip>
-        <Chip
-          style={{ background: "none", border: "none" }}
-          after={
-            <Select
-              className="tab-dropdown-button"
-              value={outputToken}
+            ></Cell>
+            <Input
+              className="w-100"
+              value={tokenInAmount}
+              after={inputToken}
               before={
-                <Iconify
-                  icon={`token-branded:${outputToken.toLowerCase()}`}
-                  height={ICONIFY_SIZE_MD}
-                  width={ICONIFY_SIZE_MD}
-                />
+                <Select
+                  className="tab-dropdown-button"
+                  value={inputToken}
+                  before={
+                    <Iconify
+                      icon={`token-branded:${inputToken.toLowerCase()}`}
+                      height={ICONIFY_SIZE_MD}
+                      width={ICONIFY_SIZE_MD}
+                    />
+                  }
+                  style={{ cursor: "pointer" }}
+                  onChange={(e) => {
+                    setInputToken(e.currentTarget.value);
+                  }}
+                >
+                  {Object.keys(WHITELIST_TOKEN).map((symbol, _) => {
+                    return (
+                      <option key={symbol} value={symbol}>
+                        {symbol}
+                      </option>
+                    );
+                  })}
+                </Select>
               }
-              style={{ cursor: "pointer", fontSize: ICONIFY_SIZE_SM }}
-              onChange={(e) => {
-                setOutputToken(e.currentTarget.value);
-              }}
-            >
-              {Object.keys(WHITELIST_TOKEN).map((symbol, _) => {
-                return (
-                  <option key={symbol} value={symbol}>
-                    {symbol}
-                  </option>
-                );
-              })}
-            </Select>
-          }
-        >
-          <Input
+              onChange={(e) => setTokenInAmount(e.target.value)}
+              placeholder="Enter Amount"
+              onBlur={handleBlur}
+            />
+          </div>
+
+          <div
             className="w-100"
-            //   value={tokenInAmount}
-            //   onChange={(e) => setTokenInAmount(e.target.value)}
-            placeholder="Enter Amount"
-            onBlur={handleBlur}
-          />
-        </Chip>
-        <Button
-          className="w-100"
-          disabled={
-            isPreError || swapError?.length > 0 || swapLoading || !tokenInAmount
-          }
-          onClick={sendSwapTx}
-        >
-          {swapLoading ? "Loading..." : swapError || "Swap"}
-        </Button>
+            style={{
+              textAlign: "center",
+              background: "none",
+            }}
+          >  <Iconify
+          icon="material-symbols:swap-vert-rounded"
+          width={ICONIFY_SIZE_MD}
+          height={ICONIFY_SIZE_MD}
+        /></div>
+
+          <div>
+            <Cell
+              style={{ textAlign: "right", background: "none" }}
+              description={
+                <div>
+                  Balance:{" "}
+                  {outputToken === "BTC"
+                    ? zerofy(account?.btcDisplayBalance ?? 0)
+                    : zerofy(
+                        Number(
+                          account?.balances[
+                            WHITELIST_TOKEN[outputToken].address
+                          ] ?? 0
+                        ) /
+                          10 ** WHITELIST_TOKEN[outputToken].decimals
+                      )}
+                </div>
+              }
+            ></Cell>
+            <Input
+              className="w-100"
+              after={outputToken}
+              before={
+                <Select
+                  className="tab-dropdown-button"
+                  value={outputToken}
+                  before={
+                    <Iconify
+                      icon={`token-branded:${outputToken.toLowerCase()}`}
+                      height={ICONIFY_SIZE_MD}
+                      width={ICONIFY_SIZE_MD}
+                    />
+                  }
+                  style={{ cursor: "pointer" }}
+                  onChange={(e) => {
+                    setOutputToken(e.currentTarget.value);
+                  }}
+                >
+                  {Object.keys(WHITELIST_TOKEN).map((symbol, _) => {
+                    return (
+                      <option key={symbol} value={symbol}>
+                        {symbol}
+                      </option>
+                    );
+                  })}
+                </Select>
+              }
+              //   onChange={(e) => setTokenInAmount(e.target.value)}
+              placeholder={swapLoading ? "Fetching best price..." : ""}
+              onBlur={handleBlur}
+            />
+            {/* <Chip
+            style={{ background: "none", border: "none" }}
+            after={
+              <Select
+                className="tab-dropdown-button"
+                value={outputToken}
+                before={
+                  <Iconify
+                    icon={`token-branded:${outputToken.toLowerCase()}`}
+                    height={ICONIFY_SIZE_MD}
+                    width={ICONIFY_SIZE_MD}
+                  />
+                }
+                style={{ cursor: "pointer", fontSize: ICONIFY_SIZE_SM }}
+                onChange={(e) => {
+                  setOutputToken(e.currentTarget.value);
+                }}
+              >
+                {Object.keys(WHITELIST_TOKEN).map((symbol, _) => {
+                  return (
+                    <option key={symbol} value={symbol}>
+                      {symbol}
+                    </option>
+                  );
+                })}
+              </Select>
+            }
+          >
+            <Input
+              className="w-100"
+              disabled
+              //   value={tokenInAmount}
+              //   onChange={(e) => setTokenInAmount(e.target.value)}
+              placeholder={swapLoading ? "Fetching best price..." : ""}
+              onBlur={handleBlur}
+            />
+          </Chip> */}
+          </div>
+
+          <Button
+            className="w-100"
+            disabled={
+              isPreError ||
+              swapError?.length > 0 ||
+              swapLoading ||
+              !tokenInAmount
+            }
+            onClick={sendSwapTx}
+          >
+            {swapLoading ? "Loading..." : swapError || "Swap"}
+          </Button>
+        </List>
       </Section>
     </Modal>
   );
