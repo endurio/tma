@@ -17,9 +17,11 @@ export interface IWeb3Account {
     allowances: IWeb3AccountAllowances;
 }
 
+
 export type TokenConstructor = {
   name?: string
   symbol?: string
+  amount?: string
   address: string
   decimals: number
   chainId: ChainId

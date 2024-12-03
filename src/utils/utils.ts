@@ -109,7 +109,13 @@ export const iewbtc = (a: number | string | BigInt | BigNumber): string => {
 export const weibtc = (a: number | string | BigInt | BigNumber): string => {
   return String(Number(a ?? 0) / 1e8)
 }
+export const wei = (a: number | string | BigInt | BigNumber): string => {
+  return String(Number(a ?? 0) / 1e18)
+}
 
+export const iew = (a: number | string | BigInt | BigNumber): string => {
+  return String(Number(a ?? 0) / 1e18)
+}
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   export function toFixed(x: any): string {
     if (Math.abs(x) < 1.0) {

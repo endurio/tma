@@ -21,18 +21,23 @@ import {
   NATIVE_ADDRESS,
   WHITELIST_TOKEN,
 } from "@/utils/constant";
-import { Token } from "symbiosis-js-sdk";
+import { ChainId, Token } from "symbiosis-js-sdk";
 import "./index.css";
 import { useWeb3Account } from "../hook/useWeb3Account";
-import { zerofy } from "@/utils/utils";
+import { wei, zerofy } from "@/utils/utils";
+import { SwapExactInResultResponse } from "@/type";
+import { BigNumber, providers } from "ethers";
 let _modal: (props: { visible: boolean }) => void;
 
 export const SwapModal = () => {
   const [visible, setVisible] = useState(true);
-  const [tokenInAmount, setTokenInAmount] = useState<string>("");
+  const [tokenAmountIn, setTokenAmountIn] = useState<string>("");
+  //   const [tokenAmountOut, settokenAmountOut] = useState<string>("");
+
   const [inputToken, setInputToken] = useState<string>("ETH");
+
   const { account } = useWeb3Account();
-  const [outputToken, setOutputToken] = useState<string>("USDC");
+  const [outputToken, setOutputToken] = useState<string>("BTC");
   const { performSwap, swapLoading, swapError, swapResult } = useSymbiosis();
 
   const tokensConstructions = useMemo(() => {
@@ -59,17 +64,17 @@ export const SwapModal = () => {
     return { tokenIn, tokenOut };
   }, [inputToken, outputToken]);
   const isPreError = useMemo(() => {
-    if (!Number(tokenInAmount) || tokenInAmount === "" || tokenInAmount === "0")
+    if (!Number(tokenAmountIn) || tokenAmountIn === "" || tokenAmountIn === "0")
       return true;
     if (!tokensConstructions) return true;
     return false;
-  }, [tokenInAmount, tokensConstructions]);
+  }, [tokenAmountIn, tokensConstructions]);
   const handleBlur = () => {
-    if (tokensConstructions && tokenInAmount) {
+    if (tokensConstructions && tokenAmountIn) {
       const { tokenIn, tokenOut } = tokensConstructions;
       performSwap({
         tokenIn,
-        tokenInAmount: String(tokenInAmount),
+        tokenAmountIn: String(tokenAmountIn),
         tokenOut,
         estimateOnly: true,
       });
@@ -80,7 +85,7 @@ export const SwapModal = () => {
     if (!tokensConstructions) return;
     const { tokenIn, tokenOut } = tokensConstructions;
     if (swapLoading === false && swapError === "")
-      performSwap({ tokenIn, tokenInAmount: String(tokenInAmount), tokenOut });
+      performSwap({ tokenIn, tokenAmountIn: String(tokenAmountIn), tokenOut });
   };
   useEffect(() => {
     _modal = ({ visible }: { visible: boolean }) => {
@@ -92,6 +97,26 @@ export const SwapModal = () => {
     if (visible) window.scrollTo(0, 0);
   }, [visible]);
 
+  const { tokenAmountOut } = useMemo(() => {
+    console.log("#swapResults", swapResult);
+    if (!swapResult || isPreError) return { tokenAmountOut: "" };
+    const swapResWithType = swapResult as SwapExactInResultResponse;
+    const tokenAmountOutMin = String(
+      Number(swapResWithType?.tokenAmountOutMin?.amount) /
+        10 ** swapResWithType?.tokenAmountOutMin?.decimals || ""
+    );
+    const tokenAmountOut = String(
+      Number(swapResWithType?.tokenAmountOutMin?.amount) /
+        10 ** swapResWithType?.tokenAmountOutMin?.decimals || ""
+    );
+    return {
+      tokenAmountOut: tokenAmountOut ?? tokenAmountOutMin ?? "",
+    };
+  }, [swapResult, tokenAmountIn, swapLoading, isPreError]);
+  const swapResultWithType = swapResult as SwapExactInResultResponse & {
+    receipt?: providers.TransactionReceipt;
+    estimatedGas?: BigNumber;
+  };
   return (
     <Modal open={visible} trigger={undefined} onOpenChange={setVisible}>
       <Section>
@@ -100,7 +125,32 @@ export const SwapModal = () => {
             <Cell
               style={{ textAlign: "right", background: "none" }}
               description={
-                <div>
+                <div
+                  onClick={() => {
+                    if (!tokensConstructions) return;
+                    const { tokenIn, tokenOut } = tokensConstructions;
+                    const _tokenAmountIn =
+                      inputToken === "BTC"
+                        ? String((account?.btcDisplayBalance ?? 0) * 0.95)
+                        : zerofy(
+                            Number(
+                              Number(
+                                account?.balances[
+                                  WHITELIST_TOKEN[inputToken].address
+                                ] ?? 0
+                              ) * 0.95
+                            ) /
+                              10 ** WHITELIST_TOKEN[inputToken].decimals
+                          );
+                    setTokenAmountIn(_tokenAmountIn);
+                    performSwap({
+                      tokenIn,
+                      tokenAmountIn: String(_tokenAmountIn),
+                      tokenOut,
+                      estimateOnly: true,
+                    });
+                  }}
+                >
                   Balance:{" "}
                   {inputToken === "BTC"
                     ? zerofy(account?.btcDisplayBalance ?? 0)
@@ -117,50 +167,68 @@ export const SwapModal = () => {
             ></Cell>
             <Input
               className="w-100"
-              value={tokenInAmount}
-              after={inputToken}
-              before={
-                <Select
-                  className="tab-dropdown-button"
-                  value={inputToken}
+              value={tokenAmountIn}
+              style={{
+                fontSize: tokenAmountIn ? ICONIFY_SIZE_LG : ICONIFY_SIZE_MD,
+              }}
+              after={
+                <Chip
+                  style={{ borderRadius: "20px" }}
                   before={
                     <Iconify
                       icon={`token-branded:${inputToken.toLowerCase()}`}
-                      height={ICONIFY_SIZE_MD}
-                      width={ICONIFY_SIZE_MD}
                     />
                   }
-                  style={{ cursor: "pointer" }}
-                  onChange={(e) => {
-                    setInputToken(e.currentTarget.value);
-                  }}
                 >
-                  {Object.keys(WHITELIST_TOKEN).map((symbol, _) => {
-                    return (
-                      <option key={symbol} value={symbol}>
-                        {symbol}
-                      </option>
-                    );
-                  })}
-                </Select>
+                  {inputToken}
+                </Chip>
               }
-              onChange={(e) => setTokenInAmount(e.target.value)}
-              placeholder="Enter Amount"
+              //   before={
+              //     <Select
+              //       className="tab-dropdown-button"
+              //       style={{padding: 0}}
+              //       value={inputToken}
+              //       before={
+              //         <Iconify
+              //           icon={`token-branded:${inputToken.toLowerCase()}`}
+              //           height={ICONIFY_SIZE_MD}
+              //           width={ICONIFY_SIZE_MD}
+              //         />
+              //       }
+              //       style={{ cursor: "pointer" }}
+              //       onChange={(e) => {
+              //         setInputToken(e.currentTarget.value);
+              //       }}
+              //     >
+              //       {Object.keys(WHITELIST_TOKEN).map((symbol, _) => {
+              //         return (
+              //           <option key={symbol} value={symbol}>
+              //             {symbol}
+              //           </option>
+              //         );
+              //       })}
+              //     </Select>
+              //   }
+              onChange={(e) => setTokenAmountIn(e.target.value)}
+              placeholder="Input amount..."
               onBlur={handleBlur}
             />
           </div>
 
-          <div
+          {/* <div
             className="w-100"
             style={{
               textAlign: "center",
               background: "none",
             }}
-          >  <Iconify
-          icon="material-symbols:swap-vert-rounded"
-          width={ICONIFY_SIZE_MD}
-          height={ICONIFY_SIZE_MD}
-        /></div>
+          >
+            {" "}
+            <Iconify
+              icon="material-symbols:swap-vert-rounded"
+              width={ICONIFY_SIZE_MD}
+              height={ICONIFY_SIZE_MD}
+            />
+          </div> */}
 
           <div>
             <Cell
@@ -183,34 +251,59 @@ export const SwapModal = () => {
             ></Cell>
             <Input
               className="w-100"
-              after={outputToken}
-              before={
-                <Select
-                  className="tab-dropdown-button"
-                  value={outputToken}
+              style={{
+                fontSize: swapLoading ? ICONIFY_SIZE_MD : ICONIFY_SIZE_LG,
+              }}
+              value={tokenAmountOut}
+              //   before={
+              //     <Chip
+              //     style={{ borderRadius: "10px" }}
+              //   >
+              //      <Iconify
+              //         icon={`token-branded:${WHITELIST_TOKEN[outputToken].chainId === ChainId.ARBITRUM_MAINNET ? 'arbi' : 'btc'}`}
+              //       />
+              //   </Chip>
+              //   }
+              after={
+                <Chip
+                  style={{ borderRadius: "20px" }}
                   before={
                     <Iconify
                       icon={`token-branded:${outputToken.toLowerCase()}`}
-                      height={ICONIFY_SIZE_MD}
-                      width={ICONIFY_SIZE_MD}
                     />
                   }
-                  style={{ cursor: "pointer" }}
-                  onChange={(e) => {
-                    setOutputToken(e.currentTarget.value);
-                  }}
                 >
-                  {Object.keys(WHITELIST_TOKEN).map((symbol, _) => {
-                    return (
-                      <option key={symbol} value={symbol}>
-                        {symbol}
-                      </option>
-                    );
-                  })}
-                </Select>
+                  {outputToken}
+                </Chip>
               }
-              //   onChange={(e) => setTokenInAmount(e.target.value)}
-              placeholder={swapLoading ? "Fetching best price..." : ""}
+              //   before={
+              // <Select
+              //   className="tab-dropdown-button"
+              //   value={outputToken}
+              //   before={
+              //     <Iconify
+              //       icon={`token-branded:${outputToken.toLowerCase()}`}
+              //       height={ICONIFY_SIZE_MD}
+              //       width={ICONIFY_SIZE_MD}
+              //     />
+              //   }
+              //   style={{ cursor: "pointer" }}
+              //   onChange={(e) => {
+              //     setOutputToken(e.currentTarget.value);
+              //   }}
+              // >
+              //   {Object.keys(WHITELIST_TOKEN).map((symbol, _) => {
+              //     return (
+              //       <option key={symbol} value={symbol}>
+              //         {symbol}
+              //       </option>
+              //     );
+              //   })}
+
+              // </Select>
+              //   }
+              //   onChange={(e) => setTokenAmountIn(e.target.value)}
+              placeholder={swapLoading ? "Finding best rates..." : ""}
               onBlur={handleBlur}
             />
             {/* <Chip
@@ -244,8 +337,8 @@ export const SwapModal = () => {
             <Input
               className="w-100"
               disabled
-              //   value={tokenInAmount}
-              //   onChange={(e) => setTokenInAmount(e.target.value)}
+              //   value={tokenAmountIn}
+              //   onChange={(e) => setTokenAmountIn(e.target.value)}
               placeholder={swapLoading ? "Fetching best price..." : ""}
               onBlur={handleBlur}
             />
@@ -258,12 +351,26 @@ export const SwapModal = () => {
               isPreError ||
               swapError?.length > 0 ||
               swapLoading ||
-              !tokenInAmount
+              !tokenAmountIn
             }
             onClick={sendSwapTx}
           >
             {swapLoading ? "Loading..." : swapError || "Swap"}
           </Button>
+          {swapResultWithType?.routes && !isPreError && swapError === "" ? (
+            <div>
+              <Cell
+                subtitle="Estimate time:"
+                after={`~${swapResultWithType?.estimatedTime}s`}
+              ></Cell>
+              <Cell
+                subtitle="Estimate gas:"
+                after={`${zerofy(Number(swapResultWithType?.fee?.amount) / 10 ** swapResultWithType?.fee?.decimals)} ${swapResultWithType?.fee?.symbol}`}
+              ></Cell>
+            </div>
+          ) : (
+            ""
+          )}
         </List>
       </Section>
     </Modal>

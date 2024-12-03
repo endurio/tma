@@ -31,7 +31,7 @@ export const AccountManagement: FC = () => {
   const swap = async () => {
     const tokenIn = new Token({address: '', isNative: true, symbol: 'ETH', chainId: ChainId.ARBITRUM_MAINNET, decimals: 18})
     const tokenOut = new Token({address: '', symbol: 'BTC', chainId: ChainId.BTC_MAINNET, decimals: 18})
-    await performSwap({tokenIn, tokenOut, tokenInAmount: '0.002', estimateOnly: false})
+    await performSwap({tokenIn, tokenOut, tokenAmountIn: '0.002', estimateOnly: false})
   }
   useEffect(() => {
     console.log('#res', swapError, swapResult)

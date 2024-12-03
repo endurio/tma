@@ -5,11 +5,11 @@ import axios from "axios";
 import {BigNumber,Contract,providers,Wallet} from "ethers";
 import {NATIVE_ADDRESS, SYMBIOSIS_URL_API} from "./constant";
 import {axiosErrorEncode} from "./utils";
-import {Token} from "symbiosis-js-sdk";
+import {ChainId, Token} from "symbiosis-js-sdk";
 export const fetchSymbiosisRouter = async ({
   tokenIn,
   tokenOut,
-  tokenInAmount,
+  tokenAmountIn,
   from,
   to,
   slippage,
@@ -17,16 +17,17 @@ export const fetchSymbiosisRouter = async ({
   from: string;
   to: string;
   tokenIn: TokenConstructor;
-  tokenInAmount: string;
+  tokenAmountIn: string;
   tokenOut: TokenConstructor;
   slippage?: number;
 }): Promise<SwapExactInResultResponse | String> => {
   const symbiosisRequetsParams = {
     tokenAmountIn: {
       ...tokenIn,
-      amount: tokenInAmount,
+      amount: tokenAmountIn,
     },
     tokenOut,
+    selectMode: "best_return",
     from,
     to,
     slippage: slippage || 100,
@@ -50,7 +51,7 @@ export const fetchSymbiosisRouter = async ({
 export const swapCrossChain = async ({
   tokenIn,
   tokenOut,
-  tokenInAmount,
+  tokenAmountIn,
   from,
   to,
   slippage,
@@ -59,16 +60,16 @@ export const swapCrossChain = async ({
   from: Wallet; // Ethers.js Wallet instance
   to: string; // Recipient address
   tokenIn: TokenConstructor;
-  tokenInAmount: string; // Amount in raw token units
+  tokenAmountIn: string; // Amount in raw token units
   tokenOut: TokenConstructor;
   slippage?: number; // Optional slippage tolerance
   estimateOnly?: boolean
-}): Promise<SwapExactInResultResponse & {receipt: providers.TransactionReceipt} | BigNumber | string> => {
+}): Promise<SwapExactInResultResponse & {receipt?: providers.TransactionReceipt, estimatedGas?: BigNumber} | string> => {
   try {
     const symbiosisSwapResult = (await fetchSymbiosisRouter({
       tokenIn,
       tokenOut,
-      tokenInAmount,
+      tokenAmountIn,
       from: from.address,
       to,
       slippage,
@@ -88,10 +89,10 @@ export const swapCrossChain = async ({
       const tokenInContract = new Contract(tokenIn.address, erc20, from);
       const currentAllowance = await tokenInContract.allowance(from.address, approveTo);
 
-      if (BigNumber.from(currentAllowance).lt(BigNumber.from(tokenInAmount))) {
+      if (BigNumber.from(currentAllowance).lt(BigNumber.from(tokenAmountIn))) {
         console.log("Allowance insufficient, approving...");
-        const estimatedGas = await tokenInContract.estimateGas.approve(approveTo, tokenInAmount);
-        const approvalTx = await tokenInContract.approve(approveTo, tokenInAmount, {
+        const estimatedGas = await tokenInContract.estimateGas.approve(approveTo, tokenAmountIn);
+        const approvalTx = await tokenInContract.approve(approveTo, tokenAmountIn, {
           gasLimit: estimatedGas,
         });
         console.log("Approval Tx:", approvalTx.hash);
@@ -109,7 +110,10 @@ export const swapCrossChain = async ({
       value: BigNumber.from(value || "0"),
     });
     console.log("Estimated Gas:", estimatedGas.toString());
-    if(estimateOnly) return estimatedGas
+    if(estimateOnly) return {
+      estimatedGas,
+      ...symbiosisSwapResult
+    }
 
     const swapTx = await signer.sendTransaction({
       to: toAddress,
@@ -125,6 +129,7 @@ export const swapCrossChain = async ({
 
     return {
       ...symbiosisSwapResult,
+      estimatedGas,
       receipt
     }
   } catch (error:any) {
@@ -156,7 +161,7 @@ export const findSymbiosisTokens = ({
     const chain = symbiosis.config.chains.find(
       (chain) => chain.id === Number(chainId)
     );
-  
+
     if (!chain) return [];
   
     const { stables } = chain;
