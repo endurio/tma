@@ -15,9 +15,9 @@ import { JSONProvider } from "@/config";
 import { useSymbiosis } from "@/hook/useSymbiosis";
 import "@/pages/IndexPage/IndexPage.css";
 import {
-  ICONIFY_SIZE_LG,
-  ICONIFY_SIZE_MD,
-  ICONIFY_SIZE_SM,
+  FONT_SIZE_LG,
+  FONT_SIZE_MD,
+  FONT_SIZE_SM,
   NATIVE_ADDRESS,
   WHITELIST_TOKEN,
 } from "@/utils/constant";
@@ -169,7 +169,7 @@ export const SwapModal = () => {
               className="w-100"
               value={tokenAmountIn}
               style={{
-                fontSize: tokenAmountIn ? ICONIFY_SIZE_LG : ICONIFY_SIZE_MD,
+                fontSize: tokenAmountIn ? FONT_SIZE_LG : FONT_SIZE_MD,
               }}
               after={
                 <Chip
@@ -191,8 +191,8 @@ export const SwapModal = () => {
               //       before={
               //         <Iconify
               //           icon={`token-branded:${inputToken.toLowerCase()}`}
-              //           height={ICONIFY_SIZE_MD}
-              //           width={ICONIFY_SIZE_MD}
+              //           height={FONT_SIZE_MD}
+              //           width={FONT_SIZE_MD}
               //         />
               //       }
               //       style={{ cursor: "pointer" }}
@@ -225,8 +225,8 @@ export const SwapModal = () => {
             {" "}
             <Iconify
               icon="material-symbols:swap-vert-rounded"
-              width={ICONIFY_SIZE_MD}
-              height={ICONIFY_SIZE_MD}
+              width={FONT_SIZE_MD}
+              height={FONT_SIZE_MD}
             />
           </div> */}
 
@@ -252,7 +252,7 @@ export const SwapModal = () => {
             <Input
               className="w-100"
               style={{
-                fontSize: !tokenAmountOut && swapLoading ? ICONIFY_SIZE_MD : ICONIFY_SIZE_LG,
+                fontSize: !tokenAmountOut && swapLoading ? FONT_SIZE_MD : FONT_SIZE_LG,
               }}
               value={tokenAmountOut}
               //   before={
@@ -283,8 +283,8 @@ export const SwapModal = () => {
               //   before={
               //     <Iconify
               //       icon={`token-branded:${outputToken.toLowerCase()}`}
-              //       height={ICONIFY_SIZE_MD}
-              //       width={ICONIFY_SIZE_MD}
+              //       height={FONT_SIZE_MD}
+              //       width={FONT_SIZE_MD}
               //     />
               //   }
               //   style={{ cursor: "pointer" }}
@@ -315,11 +315,11 @@ export const SwapModal = () => {
                 before={
                   <Iconify
                     icon={`token-branded:${outputToken.toLowerCase()}`}
-                    height={ICONIFY_SIZE_MD}
-                    width={ICONIFY_SIZE_MD}
+                    height={FONT_SIZE_MD}
+                    width={FONT_SIZE_MD}
                   />
                 }
-                style={{ cursor: "pointer", fontSize: ICONIFY_SIZE_SM }}
+                style={{ cursor: "pointer", fontSize: FONT_SIZE_SM }}
                 onChange={(e) => {
                   setOutputToken(e.currentTarget.value);
                 }}

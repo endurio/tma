@@ -12,6 +12,6 @@ export const SYMBIOSIS_URL_API='https://api.symbiosis.finance/crosschain/v1/swap
 export const WHITELIST_TOKEN_LIST: string[] = Object.keys(WHITELIST_TOKEN).map((symbol: any) => WHITELIST_TOKEN[symbol].address).filter(address => address !== NATIVE_ADDRESS && address !== WHITELIST_TOKEN['BTC'].address)
 export const MULTICALL_ADDRESS = '0xcA11bde05977b3631167028862bE2a173976CA11'
 
-export const ICONIFY_SIZE_SM = '16px'
-export const ICONIFY_SIZE_MD = '24px'
-export const ICONIFY_SIZE_LG = '32px'
+export const FONT_SIZE_SM = '16px'
+export const FONT_SIZE_MD = '24px'
+export const FONT_SIZE_LG = '32px'

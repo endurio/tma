@@ -16,7 +16,7 @@ import {copyToClipboard,openBitcoinExplorer,openEVVMExplorer,shortenAddress, zer
 // import {Iconify} from "../iconify";
 import {useSymbiosis} from "@/hook/useSymbiosis";
 import "@/pages/IndexPage/IndexPage.css";
-import {ICONIFY_SIZE_MD, ICONIFY_SIZE_SM, WHITELIST_TOKEN} from "@/utils/constant";
+import {FONT_SIZE_MD, FONT_SIZE_SM, WHITELIST_TOKEN} from "@/utils/constant";
 import {ChainId,Token} from "symbiosis-js-sdk";
 import {Iconify} from "../iconify";
 import {depositModal} from "./components/DepositModal";
@@ -47,11 +47,11 @@ export const AccountManagement: FC = () => {
                 <div>
                   <Chip
                     style={{ width: "100%", padding: 3, background: 'none' }}
-                    before={<Iconify icon="token:arbi" height={ICONIFY_SIZE_SM} width={ICONIFY_SIZE_SM} />}
+                    before={<Iconify icon="token:arbi" height={FONT_SIZE_SM} width={FONT_SIZE_SM} />}
                     disabled={isFetchingWeb3Account}
                     after={<div>
-                      <Iconify icon={"material-symbols:content-copy-outline"} onClick={() => copyToClipboard(web3Account?.evmAddress || "")} height={ICONIFY_SIZE_SM} width={ICONIFY_SIZE_SM}/> 
-                      <Iconify icon={"cuida:open-in-new-tab-outline"} onClick={() => {openEVVMExplorer({address: web3Account?.evmAddress})}} height={ICONIFY_SIZE_SM} width={ICONIFY_SIZE_SM}/> 
+                      <Iconify icon={"material-symbols:content-copy-outline"} onClick={() => copyToClipboard(web3Account?.evmAddress || "")} height={FONT_SIZE_SM} width={FONT_SIZE_SM}/> 
+                      <Iconify icon={"cuida:open-in-new-tab-outline"} onClick={() => {openEVVMExplorer({address: web3Account?.evmAddress})}} height={FONT_SIZE_SM} width={FONT_SIZE_SM}/> 
                     </div>}
                   >
                     {shortenAddress(web3Account?.evmAddress)}
@@ -61,11 +61,11 @@ export const AccountManagement: FC = () => {
                 <Chip
                     style={{ width: "100%",padding: 3, background: 'none' }}
                     onClick={() => copyToClipboard(web3Account?.btcAddress || "")}
-                    before={<Iconify icon="token:btc" height={ICONIFY_SIZE_SM} width={ICONIFY_SIZE_SM} />}
+                    before={<Iconify icon="token:btc" height={FONT_SIZE_SM} width={FONT_SIZE_SM} />}
                     disabled={isFetchingWeb3Account}
                     after={<div>
-                     <Iconify icon={"material-symbols:content-copy-outline"} onClick={() => copyToClipboard(web3Account?.btcAddress || "")} height={ICONIFY_SIZE_SM} width={ICONIFY_SIZE_SM}/> 
-                     <Iconify icon={"cuida:open-in-new-tab-outline"} onClick={() => {openBitcoinExplorer({address: web3Account?.btcAddress})}} height={ICONIFY_SIZE_SM} width={ICONIFY_SIZE_SM}/>
+                     <Iconify icon={"material-symbols:content-copy-outline"} onClick={() => copyToClipboard(web3Account?.btcAddress || "")} height={FONT_SIZE_SM} width={FONT_SIZE_SM}/> 
+                     <Iconify icon={"cuida:open-in-new-tab-outline"} onClick={() => {openBitcoinExplorer({address: web3Account?.btcAddress})}} height={FONT_SIZE_SM} width={FONT_SIZE_SM}/>
                       </div>} 
                   >
                     {shortenAddress(web3Account?.btcAddress)}
