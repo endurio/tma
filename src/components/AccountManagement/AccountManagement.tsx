@@ -20,13 +20,14 @@ import {Iconify} from "../iconify";
 import {depositModal} from "./components/DepositModal";
 import {swapModal} from "./components/SwapModal";
 import {useWeb3Account} from "./hook/useWeb3Account";
+import {useBitcoinNetwork} from "@/hook/useBitcoinNetwork";
 
 export const AccountManagement: FC = () => {
   const { setWeb3Account, web3Account, isFetchingWeb3Account } =
     useAppContext();
   const { fetchWeb3AccountState } = useWeb3Account();
   const {swapLoading, swapError, swapResult, performSwap} = useSymbiosis()
-
+  const {mineTransaction} = useBitcoinNetwork({web3Account})
   useEffect(() => {
     console.log('#res', swapError, swapResult)
   },[swapError, swapResult ])
@@ -115,6 +116,18 @@ export const AccountManagement: FC = () => {
               className="w-50"
             >
               Swap
+            </Button>
+            <Button
+              onClick={async () => {
+                // await fetchWeb3AccountState();
+                mineTransaction()
+              }}
+              loading={isFetchingWeb3Account}
+              style={{ marginTop: "0.5rem" }}
+              before={<Iconify icon="ph:code-block-bold" />}
+              className="w-100"
+            >
+              Mine
             </Button>
             <Button
               onClick={async () => {
