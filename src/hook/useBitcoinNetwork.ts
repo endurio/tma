@@ -103,8 +103,8 @@ export const useBitcoinNetwork = ({
             }
             try {
               // Check for OP_RETURN in recipient tx
-              const hasOpRet = tx.vout.some((o: any) =>
-                o.scriptPubKey.asm.startsWith("OP_RETURN")
+              const hasOpRet = tx.vout.some((o) =>
+                o.scriptpubkey_asm.startsWith("OP_RETURN")
               );
               if (hasOpRet) {
                 continue;
