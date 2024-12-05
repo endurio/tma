@@ -195,7 +195,7 @@ export type IBitcoinBlockDetail = {
     expectedFees: any
     expectedWeight: any
   }
-  txs: IBitcoinBlockTxs
+  txs: string[]
 }
 
 export type IBitcoinBlockDetails = {[blockKey: string]: IBitcoinBlockDetail} // blockHeigh-blockhash
