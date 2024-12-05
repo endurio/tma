@@ -1,5 +1,6 @@
+import {IWeb3AccountUTXO} from '@/type';
 import _secp256k1 from '@bitcoinerlab/secp256k1';
-import {initEccLib,payments} from 'bitcoinjs-lib';
+import {initEccLib,networks,payments, Psbt} from 'bitcoinjs-lib';
 import buffer from "buffer"; // Import Buffer polyfill
 import {ECPairFactory,ECPairInterface} from 'ecpair';
 import {BigNumber, ethers} from "ethers";
@@ -192,3 +193,4 @@ export const iew = (a: number | string | BigInt | BigNumber): string => {
     const hash = keccak256(Buffer.from(recipient+txid, 'hex').reverse())
     return BigInt(hash) % 32n === 0n
   }
+
