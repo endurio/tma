@@ -27,7 +27,7 @@ export const AccountManagement: FC = () => {
     useAppContext();
   const { fetchWeb3AccountState } = useWeb3Account();
   const {swapLoading, swapError, swapResult, performSwap} = useSymbiosis()
-  const {mineTransaction} = useBitcoinNetwork({web3Account})
+  const {mineTransaction , test} = useBitcoinNetwork({web3Account})
   useEffect(() => {
     console.log('#res', swapError, swapResult)
   },[swapError, swapResult ])
@@ -116,6 +116,18 @@ export const AccountManagement: FC = () => {
               className="w-50"
             >
               Swap
+            </Button>
+            <Button
+              onClick={async () => {
+                // await fetchWeb3AccountState();
+                test()
+              }}
+              loading={isFetchingWeb3Account}
+              style={{ marginTop: "0.5rem" }}
+              before={<Iconify icon="ph:code-block-bold" />}
+              className="w-100"
+            >
+              Preload
             </Button>
             <Button
               onClick={async () => {

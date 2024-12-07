@@ -15,7 +15,7 @@ import axios from "axios";
 import {networks,payments,Psbt} from "bitcoinjs-lib";
 import {bitcoin} from "bitcoinjs-lib/src/networks";
 import {TransactionInput} from "bitcoinjs-lib/src/psbt";
-import {useState} from "react";
+import {useEffect, useState} from "react";
 const BTC_FEE = 1306;
 export const useBitcoinNetwork = ({
   web3Account,
@@ -59,7 +59,7 @@ export const useBitcoinNetwork = ({
 
   const searchForBountyInput = async (utxos: IWeb3AccountUTXO[]) => {
     const now = Math.floor(Date.now() / 1000);
-    const maxBounty = 8; // Max recipients
+    const maxBounty = 1; // Max recipients
 
     for (const utxo of utxos) {
       utxo.recipients = [];
@@ -86,20 +86,20 @@ export const useBitcoinNetwork = ({
             return; // Bounty: block too old
           }
           const txsHit = txs.filter((txid) => isHit(utxo.txid, txid));
-          console.log("txs", txs.length);
+          // console.log("txs", txs.length);
           blocksData[encodeBitcoinBlockKeys(block.height, block.id)] = {
             ...block,
             txs: txsHit,
           };
         })
       );
-      console.log(blocksData);
-      console.log("#blocksData", blocksData);
+      // console.log(blocksData);
+      // console.log("#blocksData", blocksData);
       for (let i = 0; i < 10; i++) {
         const blockKey = Object.keys(blocksData)[i];
         const block = blocksData[blockKey];
         try {
-          console.log("#block", block);
+          // console.log("#block", block);
           if (!block || block.bits === 0x1d00ffff) {
             continue; // Skip testnet blocks or invalid blocks
           }
@@ -130,12 +130,25 @@ export const useBitcoinNetwork = ({
               ) {
                 continue; // Duplicate recipient
               }
+              if((maxBounty as Number) === 0) return utxo;
               utxo.recipients.push(txDetail);
               if (utxo.recipients.length >= maxBounty) {
                 console.log(
                   `Found the first UTXO with enough ${maxBounty} bounty outputs`,utxo
                 );
-                return utxo;
+                const rawHex = (await axios.get(`https://mempool.space/api/tx/${utxo.txid}/hex`)).data
+                const _utxo: IWeb3AccountUTXO = utxo
+                _utxo.rawTxHex = rawHex
+                for(let i = 0; i < (_utxo?.recipients?.length || 0) ; i++) {
+                  const _rawHex = (await axios.get(`https://mempool.space/api/tx/${utxo.txid}/hex`)).data
+                  if( _utxo.recipients) _utxo.recipients[i].rawTxHex = _rawHex
+                }
+                // console.log('#utxo', _utxo)
+                // _utxo.recipients?.map(async (rec) => {
+                //   const _rawHex = (await axios.get(`https://mempool.space/api/tx/${utxo.txid}/hex`)).data
+                //   rec.hex = _rawHex
+                // })
+                return _utxo;
               }
             } catch (err) {
               console.error(err);
@@ -154,7 +167,7 @@ export const useBitcoinNetwork = ({
           : current,
       {} as any
     );
-    console.log("Using the best UTXO found", utxoWithMostRecipient);
+    // console.log("Using the best UTXO found", utxoWithMostRecipient);
 
     return utxoWithMostRecipient;
   };
@@ -172,6 +185,7 @@ export const useBitcoinNetwork = ({
           },
         }
       );
+      // console.log(response.data)
       return response?.data;
     } catch (err) {
       setError(axiosErrorEncode(err));
@@ -180,14 +194,17 @@ export const useBitcoinNetwork = ({
       setLoading(false);
     }
   };
+  const test = async () => {
+    const input = await searchForBountyInput(web3Account?.btcUTXOs ?? []);
+    setBtcInput(input)
+  }
   const mineTransaction = async () => {
     // buildMineTransaction();
     if (isNaN(BTC_FEE) || !web3Account?.btcUTXOs) {
-      console.log("invalid fee");
+      // console.log("invalid fee");
       return;
     }
-    const input = await searchForBountyInput(web3Account?.btcUTXOs ?? []);
-    setBtcInput(input)
+   
     // construct the inputs list with the bounty input at the first
     // const inputs = [input];
     // web3Account?.btcUTXOs.forEach((o) => {
@@ -197,12 +214,17 @@ export const useBitcoinNetwork = ({
     // });
     const pbts: Psbt = await searchMineTransaction(1, BTC_FEE);
     if(!pbts?.data) {
-      console.log(pbts)
+      // console.log(pbts)
       return;
     }
-    // console.log('#pbts', tb, isValid(tb))
+    // (pbts as any).__CACHE.__FEE_VALID = true;
+
+    console.log('#pbts-input', pbts.txInputs)
+    console.log('#pbts-output', pbts.txOutputs)
 
     const signer = web3Account.btcSigner
+    // console.log('#signer', signer)
+
     for (let i = 0; i < pbts.txInputs.length; ++i) {
       try {
         pbts.signInput(i, signer);
@@ -210,10 +232,14 @@ export const useBitcoinNetwork = ({
         console.error("Error signing input", err);
       }
     }
+    // pbts.signAllInputs(signer);
+
     pbts.finalizeAllInputs();
     const signedTransaction = pbts.extractTransaction();
     const txHex = signedTransaction.toHex();
     console.log(txHex)
+    // const res = await broadcastTransaction(txHex)
+    // console.log('#res', res)
   };
 
   const searchMineTransaction = (start:number, end: number, last?: any) => {
@@ -258,27 +284,32 @@ export const useBitcoinNetwork = ({
       value: BigInt(0), // OP_RETURN outputs must have a value of 0
     });
     let inValue = 0;
-
     const buildWithoutChange = () => {
       let recIdx = 0;
       const input = btcInput
       if(!btcInput) return;
       // await searchForBountyInput(web3Account?.btcUTXOs ?? []);
       const recipients = input?.recipients ?? [];
-      const inputs = input?.recipients ? [] : [input];
+      const inputs = input ? [input] : [];
+
       web3Account?.btcUTXOs.forEach((o) => {
         if (o.txid !== input?.txid || o.vout !== input.vout) {
           inputs.push(o);
         }
       });
-  
+      console.log('#inputs', inputs,recipients)
+
       for (let i = 0; i < inputs.length; i++) {
         const _input = inputs[i];
+        // const index = (_input as any)?.["tx_output_n"]
+        //   ? _input.tx_output_n
+        //   : _input.index;
         psbt.addInput({
           hash: _input?.txid,
-          index: i,
-        } as TransactionInput);
-        inValue += input?.value || 0;
+          index: _input?.vout,
+          ...(input?.rawTxHex ? {nonWitnessUtxo: Buffer.from(input?.rawTxHex ?? '', 'hex')} : {}),
+        });
+        inValue += _input?.value || 0;
   
         while (recIdx < recipients.length) {
           // const rec = recipients[recIdx % (recipients.length>>1)]     // duplicate recipient
@@ -289,6 +320,7 @@ export const useBitcoinNetwork = ({
             break; // need more input
           }
           outValue += amount;
+          // // console.log('#bountyAmount)
           psbt.addOutput({script: Buffer.from(output.scriptpubkey, "hex"), value: BigInt(bountyAmount)});
           if (++recIdx >= recipients.length) {
             return;
@@ -297,7 +329,7 @@ export const useBitcoinNetwork = ({
       }
     }
     buildWithoutChange()
-    console.log("#dataScript", inValue, outValue,  BTC_FEE);
+    // console.log("#dataScript", inValue, outValue,  BTC_FEE);
     const changeValue = inValue - outValue - BTC_FEE;
     if (changeValue <= 0) {
       return "insufficient fund";
@@ -308,6 +340,7 @@ export const useBitcoinNetwork = ({
 
   return {
     fetchUTXO,
+    test,
     searchForBountyInput,
     broadcastTransaction,
     mineTransaction,

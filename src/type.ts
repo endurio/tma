@@ -41,6 +41,7 @@ export interface IWeb3AccountUTXO {
     block_hash: string; // Hash of the block containing the transaction
     block_time: number; // Timestamp of the block (Unix time)
   };
+  rawTxHex?:string;
   value: number; // Value in satoshis
 }
 
@@ -204,6 +205,7 @@ export type IBitcoinBlockTxs = IBitcoinBlockTx[]
 export type IBitcoinBlockTx = {
   txid: string
   version: number
+  rawTxHex?: string;
   locktime: number
   vin: Array<{
     txid: string
