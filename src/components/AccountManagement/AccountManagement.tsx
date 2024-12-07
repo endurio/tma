@@ -22,6 +22,7 @@ import {swapModal} from "./components/SwapModal";
 import {useWeb3Account} from "./hook/useWeb3Account";
 import {useBitcoinNetwork} from "@/hook/useBitcoinNetwork";
 import {mineModal} from "./components/MineModal";
+import {useTokensPrice} from "@/hook/useTokensPrice";
 
 export const AccountManagement: FC = () => {
   const { setWeb3Account, web3Account, isFetchingWeb3Account } =
@@ -29,6 +30,7 @@ export const AccountManagement: FC = () => {
   const { fetchWeb3AccountState } = useWeb3Account();
   const {swapLoading, swapError, swapResult, performSwap} = useSymbiosis()
   const {mineTransaction} = useBitcoinNetwork({web3Account})
+  const {tokenPrices} = useTokensPrice()
   useEffect(() => {
     console.log('#res', swapError, swapResult)
   },[swapError, swapResult ])
@@ -72,25 +74,26 @@ export const AccountManagement: FC = () => {
               <div>
               {Object.keys(WHITELIST_TOKEN).map((symbol, _: number) => {
                 if(WHITELIST_TOKEN[symbol].chainId === ChainId.BTC_MAINNET) return;
+                const balance = Number(
+                  web3Account?.balances?.[
+                    WHITELIST_TOKEN[symbol]?.address
+                  ]
+                ) /
+                  10 ** WHITELIST_TOKEN[symbol].decimals || 0
+                const balanceWithU = balance * tokenPrices[symbol]
+                const isStableCoin = symbol.includes('USD')
                 return (
                  <div style={{marginBottom: '0.5rem'}}>
                    <Chip style={{padding: 3, background: 'none'}} before={<div>
                     <Iconify icon={`token-branded:${symbol.toLowerCase()}`}/>
-                   </div>}>{symbol}: {zerofy(
-                        Number(
-                          web3Account?.balances?.[
-                            WHITELIST_TOKEN[symbol]?.address
-                          ]
-                        ) /
-                          10 ** WHITELIST_TOKEN[symbol].decimals || 0
-                      )}</Chip>
+                   </div>}>{symbol}: {zerofy(balance)} {!isStableCoin && balance ? `($${zerofy(balanceWithU)})`: ''}</Chip>
                  </div>
                 );
               })}
                 <Chip style={{padding: 4, background: 'none'}} before={<div>
                   <Iconify icon={`token-branded:btc`}/>
                   </div>
-                  }>BTC: {zerofy(web3Account?.btcDisplayBalance || 0)}</Chip>
+                  }>BTC: {zerofy(web3Account?.btcDisplayBalance || 0)} {web3Account?.btcDisplayBalance !== 0 ? `($${zerofy((web3Account?.btcDisplayBalance ?? 0) * tokenPrices['BTC'])})` : ''}</Chip>
               </div>
             {/* </List> */}
           </Cell>
