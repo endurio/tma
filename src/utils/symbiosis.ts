@@ -2,7 +2,7 @@ import erc20 from "@/abi/erc20.abi.json";
 import {JSONProvider,symbiosis} from "@/config";
 import {SwapExactInResultResponse,TokenConstructor} from "@/type";
 import axios from "axios";
-import {BigNumber,Contract,providers,Wallet} from "ethers";
+import {BigNumber,Contract,ethers,providers,Wallet} from "ethers";
 import {NATIVE_ADDRESS, SYMBIOSIS_URL_API} from "./constant";
 import {axiosErrorEncode} from "./utils";
 import {ChainId, Token} from "symbiosis-js-sdk";
@@ -32,6 +32,7 @@ export const fetchSymbiosisRouter = async ({
     to,
     slippage: slippage || 100,
   };
+  console.log('#symbiosisRequetsParams', symbiosisRequetsParams)
   try {
     const res = await axios.post(SYMBIOSIS_URL_API, symbiosisRequetsParams, {
       headers: {
@@ -47,7 +48,31 @@ export const fetchSymbiosisRouter = async ({
   }
 };
 
+export const aprroveToSymbiosisContract = async ({tokenIn, signer, approveTo, tokenAmountIn, estimateOnly}: {tokenAmountIn: string, tokenIn: TokenConstructor, signer: Wallet, approveTo: string, estimateOnly?: boolean}) => {
+  let isApprove = tokenIn.isNative || tokenIn.address === "";
+    if (!isApprove) {
+      const tokenInContract = new Contract(tokenIn.address, erc20, signer);
+      const currentAllowance = await tokenInContract.allowance(signer.address, approveTo);
 
+      if (BigNumber.from(currentAllowance).lt(BigNumber.from(tokenAmountIn))) {
+          try {
+            const estimatedGas = await tokenInContract.estimateGas.approve(approveTo, ethers.constants.MaxUint256);
+          if(estimateOnly) return ''
+          const approvalTx = await tokenInContract.approve(approveTo, tokenAmountIn, {
+            gasLimit: estimatedGas,
+          });
+          await approvalTx.wait();
+          return ''
+        } catch (error) {
+          return axiosErrorEncode(error)
+        }
+        
+      } else {
+        return ''
+      }
+    }
+    return ''
+}
 export const swapCrossChain = async ({
   tokenIn,
   tokenOut,
@@ -56,6 +81,7 @@ export const swapCrossChain = async ({
   to,
   slippage,
   estimateOnly,
+  approveOnly
 }: {
   from: Wallet; // Ethers.js Wallet instance
   to: string; // Recipient address
@@ -63,7 +89,8 @@ export const swapCrossChain = async ({
   tokenAmountIn: string; // Amount in raw token units
   tokenOut: TokenConstructor;
   slippage?: number; // Optional slippage tolerance
-  estimateOnly?: boolean
+  approveOnly?: boolean;
+  estimateOnly?: boolean;
 }): Promise<SwapExactInResultResponse & {receipt?: providers.TransactionReceipt, estimatedGas?: BigNumber} | string> => {
   try {
     const symbiosisSwapResult = (await fetchSymbiosisRouter({
@@ -80,30 +107,24 @@ export const swapCrossChain = async ({
     }
 
     const { tx, approveTo } = symbiosisSwapResult;
+ 
     const data = tx.data;
     const toAddress = tx.to;
     const value = tx.value;
-    console.log(symbiosisSwapResult)
-    let isApprove = tokenIn.isNative || tokenIn.address === "";
-    if (!isApprove) {
-      const tokenInContract = new Contract(tokenIn.address, erc20, from);
-      const currentAllowance = await tokenInContract.allowance(from.address, approveTo);
-
-      if (BigNumber.from(currentAllowance).lt(BigNumber.from(tokenAmountIn))) {
-        console.log("Allowance insufficient, approving...");
-        const estimatedGas = await tokenInContract.estimateGas.approve(approveTo, tokenAmountIn);
-        const approvalTx = await tokenInContract.approve(approveTo, tokenAmountIn, {
-          gasLimit: estimatedGas,
-        });
-        console.log("Approval Tx:", approvalTx.hash);
-        await approvalTx.wait();
-        console.log("Approval confirmed.");
-      } else {
-        console.log("Approval not needed.");
-      }
-    }
     const fromChainRPC = new providers.JsonRpcProvider(symbiosis.config.chains.filter(chain => chain.id === tokenIn.chainId)[0].rpc) || JSONProvider
+
+    console.log(symbiosisSwapResult)
     const signer = new Wallet(from.privateKey, fromChainRPC);
+    if(approveOnly) {
+     const approveStatus =  await aprroveToSymbiosisContract({
+          tokenIn,
+          tokenAmountIn,
+          signer,
+          estimateOnly,
+          approveTo
+      })
+    return approveStatus
+    }
     const estimatedGas = await signer.estimateGas({
       to: toAddress,
       data,

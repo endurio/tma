@@ -93,7 +93,7 @@ export const AccountManagement: FC = () => {
                 <Chip style={{padding: 4, background: 'none'}} before={<div>
                   <Iconify icon={`token-branded:btc`}/>
                   </div>
-                  }>BTC: {zerofy(web3Account?.btcDisplayBalance || 0)} {web3Account?.btcDisplayBalance !== 0 ? `($${zerofy((web3Account?.btcDisplayBalance ?? 0) * tokenPrices['BTC'])})` : ''}</Chip>
+                  }>BTC: {zerofy(web3Account?.btcDisplayBalance || 0)} {web3Account?.btcDisplayBalance ? `($${zerofy((web3Account?.btcDisplayBalance ?? 0) * tokenPrices['BTC'])})` : ''}</Chip>
               </div>
             {/* </List> */}
           </Cell>

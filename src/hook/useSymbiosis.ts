@@ -7,12 +7,11 @@ import {useState} from "react";
 import {ChainId,Token} from "symbiosis-js-sdk";
 
 export const useSymbiosis = () => {
-  const { account } = useWeb3Account();
+  const { account, fetchWeb3AccountState} = useWeb3Account();
   const [swapResult, setSwapResult] = useState<SwapExactInResultResponse & {receipt?: providers.TransactionReceipt, estimatedGas?: BigNumber} | string>('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string>('');
-
-  const performSwap = async ({tokenIn, tokenOut, tokenAmountIn, slippage, estimateOnly}: {tokenIn: Token, tokenOut: Token, tokenAmountIn: string, slippage?: number, estimateOnly?: boolean }) => {
+  const performSwap = async ({tokenIn, tokenOut, tokenAmountIn, slippage, estimateOnly, approveOnly}: {tokenIn: Token, tokenOut: Token, tokenAmountIn: string, slippage?: number, estimateOnly?: boolean, approveOnly?:boolean }) => {
     try {
       setLoading(true);
       setError('');
@@ -47,11 +46,15 @@ export const useSymbiosis = () => {
         tokenAmountIn: tokenAmountInWithDecimals,
         from: account.evmSigner,
         estimateOnly,
+        approveOnly,
         to: tokenOut.chainId === ChainId.BTC_MAINNET ? account.btcAddress : account.evmAddress,
         slippage: (slippage || 1) * 100,
       }
       console.log('#params', params)
-      const result = await swapCrossChain(params);
+      let result = await swapCrossChain(params);
+      if(approveOnly && result === '') {
+        result = await swapCrossChain({...params, approveOnly: false});
+      }
       console.log('#result', result)
       if (typeof result === "string") {
         setError(result);
@@ -60,6 +63,7 @@ export const useSymbiosis = () => {
       } else if(result?.receipt) {
         setSwapResult(result as SwapExactInResultResponse & {receipt: providers.TransactionReceipt} );
       }
+      if(!estimateOnly) {fetchWeb3AccountState()}
     } catch (err: any) {
       console.error("Swap error:", err);
       setError(axiosErrorEncode(err));
