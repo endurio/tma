@@ -222,6 +222,7 @@ export const MineModal = () => {
   );
 };
 
+
 export const mineModal = async (visible: boolean) => {
   _modal({ visible });
 };
