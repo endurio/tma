@@ -170,10 +170,7 @@ export const MineModal = () => {
             <Divider />
             {bitcoinTxPsbt?.txOutputs?.map((output, index: number) => {
               if (!output?.value || !output?.address) return;
-              // const label =
-              //   index !== bitcoinTxPsbt?.txOutputs.length - 1
-              //     ? "(Bounty)"
-              //     : "(Cash Back)";
+              const isChange = index === bitcoinTxPsbt?.txOutputs.length - 1;
               return (
                 <Cell
                   key={index}
@@ -187,7 +184,7 @@ export const MineModal = () => {
                   }
                   description={`${zerofy(
                     Number(weibtc(output.value))
-                  )} BTC ($${zerofy(Number(weibtc(output.value)) * tokenPrices.BTC)}) => ${shortenAddress(output.address)}`}
+                  )} BTC ($${zerofy(Number(weibtc(output.value)) * tokenPrices.BTC)}) => ${isChange ? " (Change)" : shortenAddress(output.address)}`}
                 />
               );
             })}
