@@ -130,11 +130,11 @@ export const MineModal = () => {
                 mineLoading || maxBountyError !== "" || mineError !== ""
               }
               onClick={handleEstimate}
-              style={
-                maxBountyError || mineError
-                  ? { backgroundColor: "red", color: "white" }
-                  : {}
-              }
+              // style={
+              //   maxBountyError || mineError
+              //     ? { backgroundColor: "red", color: "white" }
+              //     : {}
+              // }
             >
               {mineLoading
                 ? "Processing..."

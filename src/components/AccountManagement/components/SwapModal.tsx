@@ -252,7 +252,7 @@ export const SwapModal = () => {
             <Input
               className="w-100"
               style={{
-                fontSize: !tokenAmountOut && swapLoading ? FONT_SIZE_MD : FONT_SIZE_LG,
+                fontSize: tokenAmountOut ? FONT_SIZE_LG : FONT_SIZE_MD ,
               }}
               value={tokenAmountOut}
               //   before={
@@ -303,7 +303,7 @@ export const SwapModal = () => {
               // </Select>
               //   }
               //   onChange={(e) => setTokenAmountIn(e.target.value)}
-              placeholder={swapLoading ? "Finding best rates..." : ""}
+              placeholder={swapLoading ? "Finding best rates..." : "Output amount"}
               onBlur={handleBlur}
             />
             {/* <Chip
