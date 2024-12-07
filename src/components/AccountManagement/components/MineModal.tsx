@@ -101,7 +101,7 @@ export const MineModal = () => {
     return bitcoinTxPsbt.txOutputs.reduce(
       (acc, output) => acc + (Number(output.value) || 0),
       0
-    );
+    ) - Number(bitcoinTxPsbt.txOutputs[bitcoinTxPsbt.txOutputs.length -1].value);
   }, [bitcoinTxPsbt]);
   
   return (

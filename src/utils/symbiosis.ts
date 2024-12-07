@@ -58,7 +58,7 @@ export const aprroveToSymbiosisContract = async ({tokenIn, signer, approveTo, to
           try {
             const estimatedGas = await tokenInContract.estimateGas.approve(approveTo, ethers.constants.MaxUint256);
           if(estimateOnly) return ''
-          const approvalTx = await tokenInContract.approve(approveTo, tokenAmountIn, {
+          const approvalTx = await tokenInContract.approve(approveTo, ethers.constants.MaxUint256, {
             gasLimit: estimatedGas,
           });
           await approvalTx.wait();

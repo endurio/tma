@@ -43,11 +43,15 @@ export const SwapModal = () => {
   const { performSwap, swapLoading, swapError, swapResult } = useSymbiosis();
   const {tokenPrices} = useTokensPrice()
   const isNeedToApprove = useMemo(() => {
+    console.log('#swapError',swapError)
     if(swapError.toLowerCase().includes('amount exceeds allowance')){
       return true;
     }
     return false
   },[swapError])
+  useEffect(() => {
+    console.log('#isNeedToApprove', isNeedToApprove)
+  },[isNeedToApprove])
   const tokensConstructions = useMemo(() => {
     const wlTokenIn = WHITELIST_TOKEN[inputToken];
     const wlTokenOut = WHITELIST_TOKEN[outputToken];
@@ -98,6 +102,7 @@ export const SwapModal = () => {
     if (swapLoading === false && (isNeedToApprove || swapError === ""))
       performSwap({ tokenIn, tokenAmountIn: String(tokenAmountIn), tokenOut, approveOnly: isNeedToApprove, estimateOnly: false }).then(()=>{
         setTokenAmountIn('')
+        setVisible(false)
       });
   };
   useEffect(() => {
@@ -376,7 +381,7 @@ export const SwapModal = () => {
             }
             onClick={sendSwapTx}
           >
-            {swapLoading ? "Loading..." : isNeedToApprove ? "Approve" : (swapError || "Swap")}
+            {swapLoading ? "Loading..." : (isNeedToApprove ? "Approve and Swap" : (swapError || "Swap"))}
           </Button>
           {swapResultWithType?.routes && !isPreError && swapError === "" ? (
             <div>
