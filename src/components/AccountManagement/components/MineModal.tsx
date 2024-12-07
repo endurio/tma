@@ -1,3 +1,9 @@
+import {Iconify} from "@/components/iconify";
+import {BTC_FEE,useBitcoinNetwork} from "@/hook/useBitcoinNetwork";
+import {useTokensPrice} from "@/hook/useTokensPrice";
+import "@/pages/IndexPage/IndexPage.css";
+import {FONT_SIZE_SM} from "@/utils/constant";
+import {shortenAddress,weibtc,zerofy} from "@/utils/utils";
 import {
   Button,
   Cell,
@@ -7,16 +13,10 @@ import {
   Modal,
   Section,
 } from "@telegram-apps/telegram-ui";
-import { useEffect, useMemo, useState } from "react";
-import { BTC_FEE, useBitcoinNetwork } from "@/hook/useBitcoinNetwork";
-import { useWeb3Account } from "../hook/useWeb3Account";
-import "@/pages/IndexPage/IndexPage.css";
+import {Psbt} from "bitcoinjs-lib";
+import {useEffect,useMemo,useState} from "react";
+import {useWeb3Account} from "../hook/useWeb3Account";
 import "./index.css";
-import { Psbt } from "bitcoinjs-lib";
-import { shortenAddress, weibtc, zerofy } from "@/utils/utils";
-import { Iconify } from "@/components/iconify";
-import { FONT_SIZE_SM } from "@/utils/constant";
-import {useTokensPrice} from "@/hook/useTokensPrice";
 
 let _modal: (props: { visible: boolean }) => void;
 
@@ -81,20 +81,6 @@ export const MineModal = () => {
   const bitcoinTxPsbt = useMemo(() => {
     return transactionDetails?.psbt as Psbt;
   }, [transactionDetails]);
-
-  // Calculate fees and total spent
-  const feeEstimate = useMemo(() => {
-    if (!bitcoinTxPsbt) return 0;
-    // const totalInput = bitcoinTxPsbt.txInputs.reduce(
-    //   (acc, input) => acc + (input. || 0),
-    //   0
-    // );
-    const totalOutput = bitcoinTxPsbt.txOutputs.reduce(
-      (acc, output) => acc + (Number(output.value) || 0),
-      0
-    );
-    return 0;
-  }, [bitcoinTxPsbt]);
 
   const totalSpent = useMemo(() => {
     if (!bitcoinTxPsbt) return 0;

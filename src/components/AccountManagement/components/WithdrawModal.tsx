@@ -1,5 +1,5 @@
-import { Cell, Modal, Section } from "@telegram-apps/telegram-ui";
-import { useEffect, useState } from "react";
+import {Modal,Section} from "@telegram-apps/telegram-ui";
+import {useEffect,useState} from "react";
 
 import "@/pages/IndexPage/IndexPage.css";
 

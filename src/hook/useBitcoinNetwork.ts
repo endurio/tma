@@ -275,7 +275,7 @@ export const useBitcoinNetwork = ({
       return true;
     }
   }
-  const _buildMineTransaction = ({bountyAmount, outValue = 0, btcInputOverride, maxBounty, opReturn}:{bountyAmount: number, outValue:number, btcInputOverride: IWeb3AccountUTXO, maxBounty: number, opReturn: string}) => {
+  const _buildMineTransaction = ({bountyAmount, outValue = 0, btcInputOverride, opReturn}:{bountyAmount: number, outValue:number, btcInputOverride: IWeb3AccountUTXO, maxBounty: number, opReturn: string}) => {
     const network = networks.bitcoin;
     const psbt = new Psbt({ network });
     let memo = opReturn || "endur.io";

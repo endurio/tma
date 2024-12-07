@@ -1,20 +1,18 @@
 import {
   Button,
-  ButtonCell,
   Cell,
   Modal,
-  Text,
-  Section,
+  Section
 } from "@telegram-apps/telegram-ui";
-import { useEffect, useState } from "react";
+import {useEffect,useState} from "react";
 
-import "@/pages/IndexPage/IndexPage.css";
-import QRCode from "react-qr-code";
-import { copyToClipboard, shortenAddress } from "@/utils/utils";
-import { Iconify } from "@/components/iconify";
-import "./index.css";
-import { WHITELIST_TOKEN } from "@/utils/constant";
+import {Iconify} from "@/components/iconify";
 import {JSONProvider} from "@/config";
+import "@/pages/IndexPage/IndexPage.css";
+import {WHITELIST_TOKEN} from "@/utils/constant";
+import {copyToClipboard,shortenAddress} from "@/utils/utils";
+import QRCode from "react-qr-code";
+import "./index.css";
 let _modal: (props: { visible: boolean; depositAddress?: string }) => void;
 
 export const DepositModal = () => {

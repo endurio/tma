@@ -1,10 +1,8 @@
-import {JSONProvider} from '@/config';
-import {IWeb3AccountUTXO} from '@/type';
 import _secp256k1 from '@bitcoinerlab/secp256k1';
-import {initEccLib,networks,payments, Psbt} from 'bitcoinjs-lib';
+import {initEccLib,payments} from 'bitcoinjs-lib';
 import buffer from "buffer"; // Import Buffer polyfill
 import {ECPairFactory,ECPairInterface} from 'ecpair';
-import {BigNumber, ethers} from "ethers";
+import {BigNumber,ethers} from "ethers";
 import {keccak256} from 'ethers/lib/utils';
 window.Buffer = buffer.Buffer
 initEccLib(_secp256k1);

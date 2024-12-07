@@ -82,7 +82,7 @@ export const SwapModal = () => {
     if (!tokensConstructions) return true;
     return false;
   }, [tokenAmountIn, tokensConstructions]);
-  const handleBlur = (tokenAmountInOverride?: any) => {
+  const handleBlur = () => {
     const _tokenAmountIn = tokenAmountIn;
     if (tokensConstructions && _tokenAmountIn) {
       const { tokenIn, tokenOut } = tokensConstructions;
@@ -96,7 +96,7 @@ export const SwapModal = () => {
     }
   };
 
-  const sendSwapTx = async (tokensConstructionsOvveride?: any) => {
+  const sendSwapTx = async () => {
     // const _tokensConstructions = tokensConstructionsOvveride || tokensConstructions
     if (!tokensConstructions) return;
     const { tokenIn, tokenOut } = tokensConstructions;

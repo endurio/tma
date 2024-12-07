@@ -13,23 +13,22 @@ import {useAppContext} from "@/pages/IndexPage/IndexPage";
 import {copyToClipboard,openBitcoinExplorer,openEVVMExplorer,shortenAddress,zerofy} from "@/utils/utils";
 // import {Iconify} from "../iconify";
 import {useSymbiosis} from "@/hook/useSymbiosis";
+import {useTokensPrice} from "@/hook/useTokensPrice";
 import "@/pages/IndexPage/IndexPage.css";
 import {FONT_SIZE_SM,WHITELIST_TOKEN} from "@/utils/constant";
 import {ChainId} from "symbiosis-js-sdk";
 import {Iconify} from "../iconify";
 import {depositModal} from "./components/DepositModal";
+import {mineModal} from "./components/MineModal";
 import {swapModal} from "./components/SwapModal";
 import {useWeb3Account} from "./hook/useWeb3Account";
-import {useBitcoinNetwork} from "@/hook/useBitcoinNetwork";
-import {mineModal} from "./components/MineModal";
-import {useTokensPrice} from "@/hook/useTokensPrice";
 
 export const AccountManagement: FC = () => {
-  const { setWeb3Account, web3Account, isFetchingWeb3Account } =
+  const { web3Account, isFetchingWeb3Account } =
     useAppContext();
   const { fetchWeb3AccountState } = useWeb3Account();
-  const {swapLoading, swapError, swapResult, performSwap} = useSymbiosis()
-  const {mineTransaction} = useBitcoinNetwork({web3Account})
+  const {swapLoading, swapError, swapResult} = useSymbiosis()
+  // const {mineTransaction} = useBitcoinNetwork({web3Account})
   const {tokenPrices} = useTokensPrice()
   useEffect(() => {
     console.log('#res', swapError, swapResult)
