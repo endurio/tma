@@ -3,7 +3,7 @@ import {List} from "@telegram-apps/telegram-ui";
 import {createContext,useContext,useState,type FC} from "react";
 
 import {AccountManagement} from "@/components/AccountManagement/AccountManagement";
-import {IWeb3Account} from "@/type";
+import {ITokensPrice, IWeb3Account} from "@/type";
 import {InitComponent} from "./InitComponent";
 import {DepositModal} from "@/components/AccountManagement/components/DepositModal";
 import {WithdrawModal} from "@/components/AccountManagement/components/WithdrawModal";
@@ -17,6 +17,9 @@ interface AppContextType {
   >;
   isFetchingWeb3Account: boolean
   setIsFetchingWeb3Account?: React.Dispatch<React.SetStateAction<boolean>>
+  tokenPrices: ITokensPrice,
+  setTokenPrices?: React.Dispatch<React.SetStateAction<ITokensPrice>>
+
 }
 
 export const AppContext = createContext<AppContextType>({
@@ -24,6 +27,8 @@ export const AppContext = createContext<AppContextType>({
   setWeb3Account: undefined,
   isFetchingWeb3Account: true,
   setIsFetchingWeb3Account: undefined,
+  setTokenPrices: undefined,
+  tokenPrices: {}
 });
 export const useAppContext = () => {
   const context = useContext(AppContext);
@@ -37,9 +42,11 @@ export const IndexPage: FC = () => {
   
   const [web3Account, setWeb3Account] = useState<IWeb3Account>();
   const [isFetchingWeb3Account, setIsFetchingWeb3Account] = useState<boolean>(true);
+  const [tokenPrices, setTokenPrices] = useState<ITokensPrice>({});
+
 
   return (
-    <AppContext.Provider value={{ web3Account, setWeb3Account, setIsFetchingWeb3Account, isFetchingWeb3Account }}>
+    <AppContext.Provider value={{tokenPrices, setTokenPrices, web3Account, setWeb3Account, setIsFetchingWeb3Account, isFetchingWeb3Account }}>
       <InitComponent/>
       <DepositModal/>
       <SwapModal/>
