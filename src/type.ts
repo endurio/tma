@@ -241,3 +241,5 @@ export type IBitcoinBlockTx = {
     block_time: number
   }
 }
+
+export type ITokensPrice = {[symbol: string]: number}

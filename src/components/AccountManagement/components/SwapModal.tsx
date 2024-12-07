@@ -7,6 +7,7 @@ import {
   Modal,
   Section,
   Select,
+  Text,
 } from "@telegram-apps/telegram-ui";
 import { useEffect, useMemo, useState } from "react";
 
@@ -27,6 +28,8 @@ import { useWeb3Account } from "../hook/useWeb3Account";
 import { wei, zerofy } from "@/utils/utils";
 import { SwapExactInResultResponse } from "@/type";
 import { BigNumber, providers } from "ethers";
+import {useTokensPrice} from "@/hook/useTokensPrice";
+import {fetchSymbiosisRouter} from "@/utils/symbiosis";
 let _modal: (props: { visible: boolean }) => void;
 
 export const SwapModal = () => {
@@ -34,12 +37,17 @@ export const SwapModal = () => {
   const [tokenAmountIn, setTokenAmountIn] = useState<string>("");
   //   const [tokenAmountOut, settokenAmountOut] = useState<string>("");
 
-  const [inputToken, setInputToken] = useState<string>("ETH");
-
+  const [inputToken, setInputToken] = useState<string>("USDT");
   const { account } = useWeb3Account();
-  const [outputToken, setOutputToken] = useState<string>("BTC");
+  const [outputToken, setOutputToken] = useState<string>("ETH");
   const { performSwap, swapLoading, swapError, swapResult } = useSymbiosis();
-
+  const {tokenPrices} = useTokensPrice()
+  const isNeedToApprove = useMemo(() => {
+    if(swapError.toLowerCase().includes('amount exceeds allowance')){
+      return true;
+    }
+    return false
+  },[swapError])
   const tokensConstructions = useMemo(() => {
     const wlTokenIn = WHITELIST_TOKEN[inputToken];
     const wlTokenOut = WHITELIST_TOKEN[outputToken];
@@ -69,23 +77,28 @@ export const SwapModal = () => {
     if (!tokensConstructions) return true;
     return false;
   }, [tokenAmountIn, tokensConstructions]);
-  const handleBlur = () => {
-    if (tokensConstructions && tokenAmountIn) {
+  const handleBlur = (tokenAmountInOverride?: any) => {
+    const _tokenAmountIn = tokenAmountIn
+    if (tokensConstructions && _tokenAmountIn) {
       const { tokenIn, tokenOut } = tokensConstructions;
       performSwap({
         tokenIn,
-        tokenAmountIn: String(tokenAmountIn),
+        tokenAmountIn: String(_tokenAmountIn),
         tokenOut,
+        approveOnly: isNeedToApprove,
         estimateOnly: true,
       });
     }
   };
 
-  const sendSwapTx = async () => {
+  const sendSwapTx = async (tokensConstructionsOvveride?: any) => {
+    // const _tokensConstructions = tokensConstructionsOvveride || tokensConstructions
     if (!tokensConstructions) return;
     const { tokenIn, tokenOut } = tokensConstructions;
-    if (swapLoading === false && swapError === "")
-      performSwap({ tokenIn, tokenAmountIn: String(tokenAmountIn), tokenOut });
+    if (swapLoading === false && (isNeedToApprove || swapError === ""))
+      performSwap({ tokenIn, tokenAmountIn: String(tokenAmountIn), tokenOut, approveOnly: isNeedToApprove, estimateOnly: false }).then(()=>{
+        setTokenAmountIn('')
+      });
   };
   useEffect(() => {
     _modal = ({ visible }: { visible: boolean }) => {
@@ -143,10 +156,12 @@ export const SwapModal = () => {
                               10 ** WHITELIST_TOKEN[inputToken].decimals
                           );
                     setTokenAmountIn(_tokenAmountIn);
+                    // handleBlur(_tokenAmountIn)
                     performSwap({
                       tokenIn,
                       tokenAmountIn: String(_tokenAmountIn),
                       tokenOut,
+                      approveOnly: isNeedToApprove,
                       estimateOnly: true,
                     });
                   }}
@@ -172,16 +187,19 @@ export const SwapModal = () => {
                 fontSize: tokenAmountIn ? FONT_SIZE_LG : FONT_SIZE_MD,
               }}
               after={
-                <Chip
-                  style={{ borderRadius: "20px" }}
-                  before={
-                    <Iconify
-                      icon={`token-branded:${inputToken.toLowerCase()}`}
-                    />
-                  }
-                >
-                  {inputToken}
-                </Chip>
+                <div style={{display: 'flex'}}>
+                   <Chip style={{background:'none'}}>{tokenAmountIn ? <Text style={{fontSize: FONT_SIZE_SM}}>{`($${zerofy(tokenPrices[inputToken] * Number(tokenAmountIn))})`}</Text> : ''}</Chip>
+                  <Chip
+                    style={{ borderRadius: "20px" }}
+                    before={
+                      <Iconify
+                        icon={`token-branded:${inputToken.toLowerCase()}`}
+                      />
+                    }
+                  >
+                    {inputToken}
+                  </Chip>
+                </div>
               }
               //   before={
               //     <Select
@@ -252,7 +270,7 @@ export const SwapModal = () => {
             <Input
               className="w-100"
               style={{
-                fontSize: tokenAmountOut ? FONT_SIZE_LG : FONT_SIZE_MD ,
+                fontSize: swapError ? FONT_SIZE_MD : (tokenAmountOut ? FONT_SIZE_LG : FONT_SIZE_MD ),
               }}
               value={tokenAmountOut}
               //   before={
@@ -265,16 +283,19 @@ export const SwapModal = () => {
               //   </Chip>
               //   }
               after={
-                <Chip
-                  style={{ borderRadius: "20px" }}
-                  before={
-                    <Iconify
-                      icon={`token-branded:${outputToken.toLowerCase()}`}
-                    />
-                  }
-                >
-                  {outputToken}
-                </Chip>
+                <div style={{display: 'flex'}}>
+                  <Chip style={{background:'none'}}>{tokenAmountOut ? <Text style={{fontSize: FONT_SIZE_SM}}>{`($${zerofy(tokenPrices[outputToken] * Number(tokenAmountOut))})`}</Text> : ''}</Chip>
+                  <Chip
+                    style={{ borderRadius: "20px" }}
+                    before={
+                      <Iconify
+                        icon={`token-branded:${outputToken.toLowerCase()}`}
+                      />
+                    }
+                  >
+                    {outputToken}
+                  </Chip>
+                </div>
               }
               //   before={
               // <Select
@@ -303,7 +324,7 @@ export const SwapModal = () => {
               // </Select>
               //   }
               //   onChange={(e) => setTokenAmountIn(e.target.value)}
-              placeholder={swapLoading ? "Finding best rates..." : "Output amount"}
+              placeholder={swapLoading ? (isNeedToApprove ? "Aprroving" : "Finding best rates...") : "Amount receive"}
               onBlur={handleBlur}
             />
             {/* <Chip
@@ -349,13 +370,13 @@ export const SwapModal = () => {
             className="w-100"
             disabled={
               isPreError ||
-              swapError?.length > 0 ||
+              (!isNeedToApprove && swapError?.length > 0) ||
               swapLoading ||
               !tokenAmountIn
             }
             onClick={sendSwapTx}
           >
-            {swapLoading ? "Loading..." : swapError || "Swap"}
+            {swapLoading ? "Loading..." : isNeedToApprove ? "Approve" : (swapError || "Swap")}
           </Button>
           {swapResultWithType?.routes && !isPreError && swapError === "" ? (
             <div>
@@ -365,7 +386,7 @@ export const SwapModal = () => {
               ></Cell>
               <Cell
                 subtitle="Estimate gas:"
-                after={`${zerofy(Number(swapResultWithType?.fee?.amount) / 10 ** swapResultWithType?.fee?.decimals)} ${swapResultWithType?.fee?.symbol}`}
+                after={`$${zerofy(Number(Number(swapResultWithType?.fee?.amount || 0) / 10 ** swapResultWithType?.fee?.decimals || 0) * tokenPrices[swapResultWithType?.fee?.symbol])}`}
               ></Cell>
             </div>
           ) : (
