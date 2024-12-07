@@ -13,7 +13,7 @@ export interface IWeb3Account {
     balances: IWeb3AccountBalance;
     btcBalance?: number;
     btcDisplayBalance?: number;
-    btcUTXO: IWeb3AccountUTXO[];
+    btcUTXOs: IWeb3AccountUTXO[];
     allowances: IWeb3AccountAllowances;
 }
 
@@ -34,12 +34,14 @@ export type TokenConstructor = {
 export interface IWeb3AccountUTXO {
   txid: string; // Transaction ID
   vout: number; // Output index in the transaction
+  recipients?: IBitcoinBlockTx[];
   status: {
     confirmed: boolean; // Whether the transaction is confirmed
     block_height: number; // Block height where the transaction is included
     block_hash: string; // Hash of the block containing the transaction
     block_time: number; // Timestamp of the block (Unix time)
   };
+  rawTxHex?:string;
   value: number; // Value in satoshis
 }
 
@@ -138,5 +140,104 @@ export type SwapExactInResultResponse = {
     data: string
     to: string
     value: string
+  }
+}
+
+
+export type IBitcoinBlockDetail = {
+  id: string
+  height: number
+  version: number
+  timestamp: number
+  bits: number
+  nonce: number
+  difficulty: number
+  merkle_root: string
+  tx_count: number
+  size: number
+  weight: number
+  previousblockhash: string
+  mediantime: number
+  extras: {
+    totalFees: number
+    medianFee: number
+    feeRange: Array<number>
+    reward: number
+    pool: {
+      id: number
+      name: string
+      slug: string
+      minerNames: any
+    }
+    avgFee: number
+    avgFeeRate: number
+    coinbaseRaw: string
+    coinbaseAddress: string
+    coinbaseAddresses: Array<string>
+    coinbaseSignature: string
+    coinbaseSignatureAscii: string
+    avgTxSize: number
+    totalInputs: number
+    totalOutputs: number
+    totalOutputAmt: number
+    medianFeeAmt: number
+    feePercentiles: Array<number>
+    segwitTotalTxs: number
+    segwitTotalSize: number
+    segwitTotalWeight: number
+    header: string
+    utxoSetChange: number
+    utxoSetSize: number
+    totalInputAmt: number
+    virtualSize: number
+    firstSeen: any
+    orphans: Array<any>
+    matchRate: any
+    expectedFees: any
+    expectedWeight: any
+  }
+  txs: string[]
+}
+
+export type IBitcoinBlockDetails = {[blockKey: string]: IBitcoinBlockDetail} // blockHeigh-blockhash
+export type IBitcoinBlockTxs = IBitcoinBlockTx[]
+
+export type IBitcoinBlockTx = {
+  txid: string
+  version: number
+  rawTxHex?: string;
+  locktime: number
+  vin: Array<{
+    txid: string
+    vout: number
+    prevout?: {
+      scriptpubkey: string
+      scriptpubkey_asm: string
+      scriptpubkey_type: string
+      scriptpubkey_address: string
+      value: number
+    }
+    scriptsig: string
+    scriptsig_asm: string
+    is_coinbase: boolean
+    sequence: number
+    inner_redeemscript_asm?: string
+  }>
+  vout: Array<{
+    scriptpubkey: string
+    scriptpubkey_asm: string
+    scriptpubkey_type: string
+    scriptpubkey_address: string
+    value: number
+  }>
+  size: number
+  weight: number
+  sigops: number
+  fee: number
+  status: {
+    confirmed: boolean
+    block_height: number
+    block_hash: string
+    block_time: number
   }
 }

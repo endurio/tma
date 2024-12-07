@@ -30,7 +30,7 @@ import { BigNumber, providers } from "ethers";
 let _modal: (props: { visible: boolean }) => void;
 
 export const SwapModal = () => {
-  const [visible, setVisible] = useState(true);
+  const [visible, setVisible] = useState(false);
   const [tokenAmountIn, setTokenAmountIn] = useState<string>("");
   //   const [tokenAmountOut, settokenAmountOut] = useState<string>("");
 
@@ -252,7 +252,7 @@ export const SwapModal = () => {
             <Input
               className="w-100"
               style={{
-                fontSize: !tokenAmountOut && swapLoading ? FONT_SIZE_MD : FONT_SIZE_LG,
+                fontSize: tokenAmountOut ? FONT_SIZE_LG : FONT_SIZE_MD ,
               }}
               value={tokenAmountOut}
               //   before={
@@ -303,7 +303,7 @@ export const SwapModal = () => {
               // </Select>
               //   }
               //   onChange={(e) => setTokenAmountIn(e.target.value)}
-              placeholder={swapLoading ? "Finding best rates..." : ""}
+              placeholder={swapLoading ? "Finding best rates..." : "Output amount"}
               onBlur={handleBlur}
             />
             {/* <Chip

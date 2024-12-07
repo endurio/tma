@@ -8,6 +8,7 @@ import {InitComponent} from "./InitComponent";
 import {DepositModal} from "@/components/AccountManagement/components/DepositModal";
 import {WithdrawModal} from "@/components/AccountManagement/components/WithdrawModal";
 import {SwapModal} from "@/components/AccountManagement/components/SwapModal";
+import {MineModal} from "@/components/AccountManagement/components/MineModal";
 
 interface AppContextType {
   web3Account?: IWeb3Account;
@@ -42,6 +43,7 @@ export const IndexPage: FC = () => {
       <InitComponent/>
       <DepositModal/>
       <SwapModal/>
+      <MineModal/>
       <WithdrawModal/>
       <Page back={false}>
         <List>

@@ -1,15 +1,18 @@
+import {IWeb3AccountUTXO} from '@/type';
 import _secp256k1 from '@bitcoinerlab/secp256k1';
-import {initEccLib,payments} from 'bitcoinjs-lib';
+import {initEccLib,networks,payments, Psbt} from 'bitcoinjs-lib';
 import buffer from "buffer"; // Import Buffer polyfill
 import {ECPairFactory,ECPairInterface} from 'ecpair';
 import {BigNumber, ethers} from "ethers";
+import {keccak256} from 'ethers/lib/utils';
 window.Buffer = buffer.Buffer
+initEccLib(_secp256k1);
+export const ECPair = ECPairFactory(_secp256k1);
 export const generateBitcoinWalletFromEVMPrivateKey = (
   privateKeyHex: string,
   compressed: boolean = true
 ): { btcNonSegwitAddress: string; btcAddress: string, btcKeyPair: ECPairInterface } => {
-  initEccLib(_secp256k1);
-  const ECPair = ECPairFactory(_secp256k1);
+
   const cleanPrivateKeyHex = privateKeyHex.startsWith("0x")
   ? privateKeyHex.slice(2)
   : privateKeyHex;
@@ -80,6 +83,22 @@ export const decodeAccountKeys = (encodedKeys: string): { evmAddress: string, bt
     return { evmAddress, btcAddress };
   } else {
     return { evmAddress: '', btcAddress: '' };
+
+  }
+};
+
+
+export const encodeBitcoinBlockKeys = (blockNumber: Number, blockHash: string): string => {
+  return `${blockNumber}-${blockHash}`;
+};
+
+export const decodeBitcoinBlockKeys = (encodedBitcoinKeys: string): { blockNumber: Number, blockHash: string }=> {
+  const keys = encodedBitcoinKeys.split('-');
+  if (keys.length === 2) {
+    const [blockNumber, blockHash] = keys;
+    return { blockNumber: Number(blockNumber), blockHash };
+  } else {
+    return { blockNumber: 0, blockHash: '' };
 
   }
 };
@@ -170,3 +189,8 @@ export const iew = (a: number | string | BigInt | BigNumber): string => {
       window.open(`https://https://arbiscan.io/address/${address}`, '_blank')
     else if(tx) window.open(`https://https://arbiscan.io/tx/${tx}`, '_blank')
   }
+  export function isHit(txid:string, recipient: string) {
+    const hash = keccak256(Buffer.from(recipient+txid, 'hex').reverse())
+    return BigInt(hash) % 32n === 0n
+  }
+

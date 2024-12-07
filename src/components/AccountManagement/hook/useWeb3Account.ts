@@ -22,7 +22,7 @@ export const useWeb3Account = () => {
       btcSigner: btcWallet.btcKeyPair,
       balances: {},
       allowances: {},
-      btcUTXO: []
+      btcUTXOs: []
     }
   }
   const getWeb3AccountFromPrivateKey = (privateKey: string): IWeb3Account => {
@@ -38,7 +38,7 @@ export const useWeb3Account = () => {
       btcSigner: btcWallet.btcKeyPair,
       balances: {},
       allowances: {},
-      btcUTXO: []
+      btcUTXOs: []
     }
   }
   const fetchWeb3AccountState = async (web3AccountOverride?: IWeb3Account) => {
@@ -53,7 +53,7 @@ export const useWeb3Account = () => {
     _webAccount.allowances = web3State[evmAddress].allowances
     _webAccount.btcDisplayBalance = Number(balance.displayBalance)
     _webAccount.btcBalance = Number(balance.balance)
-    _webAccount.btcUTXO = balance.utxo
+    _webAccount.btcUTXOs = balance.utxo
     console.log('#_webAccount', _webAccount)
     setWeb3Account(_webAccount)
     setIsFetchingWeb3Account(false)
