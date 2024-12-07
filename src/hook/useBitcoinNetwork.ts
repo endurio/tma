@@ -194,10 +194,6 @@ export const useBitcoinNetwork = ({
       setLoading(false);
     }
   };
-  // const test = async () => {
-  //   const input = await searchForBountyInput(web3Account?.btcUTXOs ?? []);
-  //   setBtcInput(input)
-  // }
   const mineTransaction = async ({maxBounty, opReturn, isEstimateOnly = true}:{maxBounty: number, opReturn: string, isEstimateOnly?: boolean}) => {
     if (isNaN(BTC_FEE) || !web3Account?.btcUTXOs) {
       return;
@@ -205,29 +201,37 @@ export const useBitcoinNetwork = ({
     const input = await searchForBountyInput({utxos: web3Account?.btcUTXOs ?? [], maxBountyOverride: maxBounty});
     setBtcInput(input)
 
-    const pbts: Psbt = await _searchMineTransaction({start: 1, end: BTC_FEE, last: undefined, input, maxBounty, opReturn});
-    if(!pbts?.data) {
+    const psbt: Psbt = await _searchMineTransaction({start: 1, end: BTC_FEE, last: undefined, input, maxBounty, opReturn});
+    if(!psbt?.data) {
       return;
     }
 
-    console.log('#pbts-input', pbts.txInputs)
-    console.log('#pbts-output', pbts.txOutputs)
+    console.log('#psbt-input', psbt.txInputs)
+    console.log('#psbt-output', psbt.txOutputs)
 
     const signer = web3Account.btcSigner
 
-    for (let i = 0; i < pbts.txInputs.length; ++i) {
+    for (let i = 0; i < psbt.txInputs.length; ++i) {
       try {
-        pbts.signInput(i, signer);
+        psbt.signInput(i, signer);
       } catch (err) {
         console.error("Error signing input", err);
       }
     }
-    pbts.finalizeAllInputs();
-    const signedTransaction = pbts.extractTransaction();
+    psbt.finalizeAllInputs();
+    const signedTransaction = psbt.extractTransaction();
     const txHex = signedTransaction.toHex();
-    if(isEstimateOnly) return txHex
+    if(isEstimateOnly) return {
+      psbt,
+      txHash: '',
+      txHex: txHex
+    }
     const txHash = await broadcastTransaction(txHex)
-    return txHash
+    return {
+      psbt,
+      txHash: txHash,
+      txHex: txHex
+    }
   };
 
   const _searchMineTransaction = ({start, end, last, input, maxBounty, opReturn}:{start:number, end: number, last?: any, input:IWeb3AccountUTXO, maxBounty: number, opReturn: string}) => {
