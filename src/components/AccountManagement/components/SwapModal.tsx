@@ -7,6 +7,7 @@ import {
   Modal,
   Section,
   Select,
+  Text,
 } from "@telegram-apps/telegram-ui";
 import { useEffect, useMemo, useState } from "react";
 
@@ -27,6 +28,7 @@ import { useWeb3Account } from "../hook/useWeb3Account";
 import { wei, zerofy } from "@/utils/utils";
 import { SwapExactInResultResponse } from "@/type";
 import { BigNumber, providers } from "ethers";
+import {useTokensPrice} from "@/hook/useTokensPrice";
 let _modal: (props: { visible: boolean }) => void;
 
 export const SwapModal = () => {
@@ -35,11 +37,10 @@ export const SwapModal = () => {
   //   const [tokenAmountOut, settokenAmountOut] = useState<string>("");
 
   const [inputToken, setInputToken] = useState<string>("ETH");
-
   const { account } = useWeb3Account();
   const [outputToken, setOutputToken] = useState<string>("BTC");
   const { performSwap, swapLoading, swapError, swapResult } = useSymbiosis();
-
+  const {tokenPrices} = useTokensPrice()
   const tokensConstructions = useMemo(() => {
     const wlTokenIn = WHITELIST_TOKEN[inputToken];
     const wlTokenOut = WHITELIST_TOKEN[outputToken];
@@ -172,16 +173,19 @@ export const SwapModal = () => {
                 fontSize: tokenAmountIn ? FONT_SIZE_LG : FONT_SIZE_MD,
               }}
               after={
-                <Chip
-                  style={{ borderRadius: "20px" }}
-                  before={
-                    <Iconify
-                      icon={`token-branded:${inputToken.toLowerCase()}`}
-                    />
-                  }
-                >
-                  {inputToken}
-                </Chip>
+                <div style={{display: 'flex'}}>
+                   <Chip style={{background:'none'}}>{tokenAmountIn ? <Text style={{fontSize: FONT_SIZE_SM}}>{`($${zerofy(tokenPrices[inputToken] * Number(tokenAmountIn))})`}</Text> : ''}</Chip>
+                  <Chip
+                    style={{ borderRadius: "20px" }}
+                    before={
+                      <Iconify
+                        icon={`token-branded:${inputToken.toLowerCase()}`}
+                      />
+                    }
+                  >
+                    {inputToken}
+                  </Chip>
+                </div>
               }
               //   before={
               //     <Select
@@ -252,7 +256,7 @@ export const SwapModal = () => {
             <Input
               className="w-100"
               style={{
-                fontSize: tokenAmountOut ? FONT_SIZE_LG : FONT_SIZE_MD ,
+                fontSize: swapError ? FONT_SIZE_MD : (tokenAmountOut ? FONT_SIZE_LG : FONT_SIZE_MD ),
               }}
               value={tokenAmountOut}
               //   before={
@@ -265,16 +269,19 @@ export const SwapModal = () => {
               //   </Chip>
               //   }
               after={
-                <Chip
-                  style={{ borderRadius: "20px" }}
-                  before={
-                    <Iconify
-                      icon={`token-branded:${outputToken.toLowerCase()}`}
-                    />
-                  }
-                >
-                  {outputToken}
-                </Chip>
+                <div style={{display: 'flex'}}>
+                  <Chip style={{background:'none'}}>{tokenAmountOut ? <Text style={{fontSize: FONT_SIZE_SM}}>{`($${zerofy(tokenPrices[inputToken] * Number(tokenAmountOut))})`}</Text> : ''}</Chip>
+                  <Chip
+                    style={{ borderRadius: "20px" }}
+                    before={
+                      <Iconify
+                        icon={`token-branded:${outputToken.toLowerCase()}`}
+                      />
+                    }
+                  >
+                    {outputToken}
+                  </Chip>
+                </div>
               }
               //   before={
               // <Select
@@ -303,7 +310,7 @@ export const SwapModal = () => {
               // </Select>
               //   }
               //   onChange={(e) => setTokenAmountIn(e.target.value)}
-              placeholder={swapLoading ? "Finding best rates..." : "Output amount"}
+              placeholder={swapLoading ? "Finding best rates..." : "Amount receive"}
               onBlur={handleBlur}
             />
             {/* <Chip
