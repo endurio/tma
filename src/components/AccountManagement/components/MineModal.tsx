@@ -16,6 +16,7 @@ import { Psbt } from "bitcoinjs-lib";
 import { shortenAddress, weibtc, zerofy } from "@/utils/utils";
 import { Iconify } from "@/components/iconify";
 import { FONT_SIZE_SM } from "@/utils/constant";
+import {useTokensPrice} from "@/hook/useTokensPrice";
 
 let _modal: (props: { visible: boolean }) => void;
 
@@ -26,6 +27,7 @@ export const MineModal = () => {
   const [maxBounty, setMaxBounty] = useState<string>("1");
   const [maxBountyError, setMaxBountyError] = useState<string>("");
   const [transactionDetails, setTransactionDetails] = useState<any>(null);
+  const {tokenPrices} = useTokensPrice()
 
   const { account } = useWeb3Account();
   const {
@@ -101,6 +103,7 @@ export const MineModal = () => {
       0
     );
   }, [bitcoinTxPsbt]);
+  
   return (
     <>
       <Modal open={visible} onOpenChange={setVisible}>
@@ -167,10 +170,10 @@ export const MineModal = () => {
             <Divider />
             {bitcoinTxPsbt?.txOutputs?.map((output, index: number) => {
               if (!output?.value || !output?.address) return;
-              const label =
-                index !== bitcoinTxPsbt?.txOutputs.length - 1
-                  ? "(Bounty)"
-                  : "(Cash Back)";
+              // const label =
+              //   index !== bitcoinTxPsbt?.txOutputs.length - 1
+              //     ? "(Bounty)"
+              //     : "(Cash Back)";
               return (
                 <Cell
                   key={index}
@@ -182,13 +185,13 @@ export const MineModal = () => {
                       height={FONT_SIZE_SM}
                     />
                   }
-                  subtitle={`${zerofy(
+                  description={`${zerofy(
                     Number(weibtc(output.value))
-                  )} BTC => ${shortenAddress(output.address)} ${label}`}
+                  )} BTC ($${zerofy(Number(weibtc(output.value)) * tokenPrices.BTC)}) => ${shortenAddress(output.address)}`}
                 />
               );
             })}
-            <Cell title="OP_RETURN" subtitle={`OP_RETURN: ${opReturn}`} />
+            <Cell title="OP_RETURN" description={`OP_RETURN: ${opReturn}`} />
             <Divider />
             <Cell
               before={
@@ -200,7 +203,7 @@ export const MineModal = () => {
               }
               description={`Fee: ${zerofy(
                 Number(weibtc(BTC_FEE))
-              )} BTC`}
+              )} BTC ($${zerofy(Number(weibtc(BTC_FEE)) * tokenPrices.BTC)})`}
             />
             <Cell
               before={
@@ -210,7 +213,7 @@ export const MineModal = () => {
                   height={FONT_SIZE_SM}
                 />
               }
-              description={`Total Spent: ${zerofy(Number(weibtc(totalSpent)))}`}
+              description={`Total Spent: ${zerofy(Number(weibtc(totalSpent)))} BTC ($${zerofy(Number(weibtc(totalSpent)) * tokenPrices.BTC)})`}
             />
             <Button className="w-100" onClick={handleMine}>
               Confirm and Mine
