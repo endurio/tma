@@ -3,9 +3,9 @@ import {JSONProvider,symbiosis} from "@/config";
 import {SwapExactInResultResponse,TokenConstructor} from "@/type";
 import axios from "axios";
 import {BigNumber,Contract,ethers,providers,Wallet} from "ethers";
-import {NATIVE_ADDRESS, SYMBIOSIS_URL_API} from "./constant";
+import {Token} from "symbiosis-js-sdk";
+import {NATIVE_ADDRESS,SYMBIOSIS_URL_API} from "./constant";
 import {axiosErrorEncode} from "./utils";
-import {ChainId, Token} from "symbiosis-js-sdk";
 export const fetchSymbiosisRouter = async ({
   tokenIn,
   tokenOut,

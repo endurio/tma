@@ -144,17 +144,14 @@ export const SwapModal = () => {
   };
   const handleTokenChange = (type: 'input' | 'output', token: string) => {
     const [_inputToken, _outputToken] = [inputToken, outputToken]
-    let isChange = false
+    
     if (type === 'input' && token === _outputToken) {
       setInputToken(_outputToken)
       setOutputToken(_inputToken)
-      isChange = true
     } else if (type === 'output' && token === _inputToken) {
       setInputToken(_outputToken)
       setOutputToken(_inputToken)
-      isChange = true
     } else {
-      isChange = true
       if (type === 'input') setInputToken(token);
       else setOutputToken(token);
     }
