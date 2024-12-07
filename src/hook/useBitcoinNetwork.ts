@@ -57,9 +57,9 @@ export const useBitcoinNetwork = ({
     }
   };
 
-  const searchForBountyInput = async (utxos: IWeb3AccountUTXO[]) => {
+  const searchForBountyInput = async ({utxos, maxBountyOverride}:{utxos: IWeb3AccountUTXO[], maxBountyOverride: number}) => {
     const now = Math.floor(Date.now() / 1000);
-    const maxBounty = 1; // Max recipients
+    const maxBounty = maxBountyOverride || 8; // Max recipients
 
     for (const utxo of utxos) {
       utxo.recipients = [];
@@ -194,36 +194,26 @@ export const useBitcoinNetwork = ({
       setLoading(false);
     }
   };
-  const test = async () => {
-    const input = await searchForBountyInput(web3Account?.btcUTXOs ?? []);
-    setBtcInput(input)
-  }
-  const mineTransaction = async () => {
-    // buildMineTransaction();
+  // const test = async () => {
+  //   const input = await searchForBountyInput(web3Account?.btcUTXOs ?? []);
+  //   setBtcInput(input)
+  // }
+  const mineTransaction = async ({maxBounty, opReturn, isEstimateOnly = true}:{maxBounty: number, opReturn: string, isEstimateOnly?: boolean}) => {
     if (isNaN(BTC_FEE) || !web3Account?.btcUTXOs) {
-      // console.log("invalid fee");
       return;
     }
-   
-    // construct the inputs list with the bounty input at the first
-    // const inputs = [input];
-    // web3Account?.btcUTXOs.forEach((o) => {
-    //   if (o.txid !== input.txid || o.vout !== input.vout) {
-    //     inputs.push(o);
-    //   }
-    // });
-    const pbts: Psbt = await searchMineTransaction(1, BTC_FEE);
+    const input = await searchForBountyInput({utxos: web3Account?.btcUTXOs ?? [], maxBountyOverride: maxBounty});
+    setBtcInput(input)
+
+    const pbts: Psbt = await _searchMineTransaction({start: 1, end: BTC_FEE, last: undefined, input, maxBounty, opReturn});
     if(!pbts?.data) {
-      // console.log(pbts)
       return;
     }
-    // (pbts as any).__CACHE.__FEE_VALID = true;
 
     console.log('#pbts-input', pbts.txInputs)
     console.log('#pbts-output', pbts.txOutputs)
 
     const signer = web3Account.btcSigner
-    // console.log('#signer', signer)
 
     for (let i = 0; i < pbts.txInputs.length; ++i) {
       try {
@@ -232,26 +222,24 @@ export const useBitcoinNetwork = ({
         console.error("Error signing input", err);
       }
     }
-    // pbts.signAllInputs(signer);
-
     pbts.finalizeAllInputs();
     const signedTransaction = pbts.extractTransaction();
     const txHex = signedTransaction.toHex();
-    console.log(txHex)
-    // const res = await broadcastTransaction(txHex)
-    // console.log('#res', res)
+    if(isEstimateOnly) return txHex
+    const txHash = await broadcastTransaction(txHex)
+    return txHash
   };
 
-  const searchMineTransaction = (start:number, end: number, last?: any) => {
-    if (start > end) return last || buildMineTransaction(end);
+  const _searchMineTransaction = ({start, end, last, input, maxBounty, opReturn}:{start:number, end: number, last?: any, input:IWeb3AccountUTXO, maxBounty: number, opReturn: string}) => {
+    if (start > end) return last || _buildMineTransaction({bountyAmount: end, outValue: 0, btcInputOverride: input, opReturn, maxBounty});
     const mid = Math.floor((start + end) / 2);
-    const tb = (buildMineTransaction(mid)) as Psbt;
+    const tb = (_buildMineTransaction({bountyAmount: mid, outValue: 0, btcInputOverride: input, opReturn, maxBounty })) as Psbt;
     // tb.txOutputs.
     // that will give you a bitcoin.Transaction object, if you need the bitcoin.TransactionBuilder then you need to add the following line.
     if (isValid(tb)) {
-      return searchMineTransaction(start, mid - 1, tb);
+      return _searchMineTransaction({start: start, end: mid - 1, last: tb, input, maxBounty, opReturn});
     } else {
-      return searchMineTransaction(mid + 1, end, last);
+      return _searchMineTransaction({start: mid + 1, end, last, input, maxBounty, opReturn});
     }
 
     function isValid(tb:any) {
@@ -273,10 +261,10 @@ export const useBitcoinNetwork = ({
       return true;
     }
   }
-  const buildMineTransaction = (bountyAmount: number, outValue:number = 0) => {
+  const _buildMineTransaction = ({bountyAmount, outValue = 0, btcInputOverride, maxBounty, opReturn}:{bountyAmount: number, outValue:number, btcInputOverride: IWeb3AccountUTXO, maxBounty: number, opReturn: string}) => {
     const network = networks.bitcoin;
     const psbt = new Psbt({ network });
-    let memo = "endur.io";
+    let memo = opReturn || "endur.io";
     const dataScript = payments.embed({ data: [Buffer.from(memo, "utf8")] });
     if (!dataScript?.output) return;
     psbt.addOutput({
@@ -286,8 +274,8 @@ export const useBitcoinNetwork = ({
     let inValue = 0;
     const buildWithoutChange = () => {
       let recIdx = 0;
-      const input = btcInput
-      if(!btcInput) return;
+      const input = btcInputOverride || btcInput
+      if(!btcInputOverride) return;
       // await searchForBountyInput(web3Account?.btcUTXOs ?? []);
       const recipients = input?.recipients ?? [];
       const inputs = input ? [input] : [];
@@ -340,9 +328,6 @@ export const useBitcoinNetwork = ({
 
   return {
     fetchUTXO,
-    test,
-    searchForBountyInput,
-    broadcastTransaction,
     mineTransaction,
     loading,
     error,
