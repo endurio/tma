@@ -6,17 +6,14 @@ import {
 } from "@/type";
 import {
   axiosErrorEncode,
-  ECPair,
   encodeBitcoinBlockKeys,
   isHit,
   weibtc
 } from "@/utils/utils";
 import axios from "axios";
 import {networks,payments,Psbt} from "bitcoinjs-lib";
-import {bitcoin} from "bitcoinjs-lib/src/networks";
-import {TransactionInput} from "bitcoinjs-lib/src/psbt";
-import {useEffect, useState} from "react";
-const BTC_FEE = 1306;
+import {useState} from "react";
+export const BTC_FEE = 1306;
 export const useBitcoinNetwork = ({
   web3Account,
 }: {
@@ -195,7 +192,10 @@ export const useBitcoinNetwork = ({
     }
   };
   const mineTransaction = async ({maxBounty, opReturn, isEstimateOnly = true}:{maxBounty: number, opReturn: string, isEstimateOnly?: boolean}) => {
+    setLoading(true)
     if (isNaN(BTC_FEE) || !web3Account?.btcUTXOs) {
+      setLoading(false)
+      setError('No UTXOs found')
       return;
     }
     const input = await searchForBountyInput({utxos: web3Account?.btcUTXOs ?? [], maxBountyOverride: maxBounty});
@@ -203,6 +203,8 @@ export const useBitcoinNetwork = ({
 
     const psbt: Psbt = await _searchMineTransaction({start: 1, end: BTC_FEE, last: undefined, input, maxBounty, opReturn});
     if(!psbt?.data) {
+      setLoading(false)
+      setError('Psbt invalid')
       return;
     }
 
@@ -221,12 +223,20 @@ export const useBitcoinNetwork = ({
     psbt.finalizeAllInputs();
     const signedTransaction = psbt.extractTransaction();
     const txHex = signedTransaction.toHex();
-    if(isEstimateOnly) return {
+    if(isEstimateOnly) {
+      setError('')
+      setLoading(false)
+
+      return {
       psbt,
       txHash: '',
       txHex: txHex
     }
+  }
     const txHash = await broadcastTransaction(txHex)
+    setLoading(false)
+    setError('')
+
     return {
       psbt,
       txHash: txHash,

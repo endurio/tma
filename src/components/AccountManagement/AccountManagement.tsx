@@ -21,6 +21,7 @@ import {depositModal} from "./components/DepositModal";
 import {swapModal} from "./components/SwapModal";
 import {useWeb3Account} from "./hook/useWeb3Account";
 import {useBitcoinNetwork} from "@/hook/useBitcoinNetwork";
+import {mineModal} from "./components/MineModal";
 
 export const AccountManagement: FC = () => {
   const { setWeb3Account, web3Account, isFetchingWeb3Account } =
@@ -120,13 +121,9 @@ export const AccountManagement: FC = () => {
             <Button
               onClick={async () => {
                 // await fetchWeb3AccountState();
-                console.log(await mineTransaction({
-                  opReturn: 'abcxyz',
-                  maxBounty: 1,
-                  isEstimateOnly: true
-                }))
+                mineModal(true)
               }}
-              loading={isFetchingWeb3Account}
+              disabled={isFetchingWeb3Account}
               style={{ marginTop: "0.5rem" }}
               before={<Iconify icon="ph:code-block-bold" />}
               className="w-100"
