@@ -142,7 +142,7 @@ export const MineModal = () => {
                 ? maxBountyError
                 : mineError
                 ? mineError
-                : "Estimate"}
+                : "Mine"}
             </Button>
           </List>
         </Section>
