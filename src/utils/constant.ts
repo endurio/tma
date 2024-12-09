@@ -23,6 +23,4 @@ export const FONT_SIZE_SM = '16px'
 export const FONT_SIZE_MD = '24px'
 export const FONT_SIZE_LG = '32px'
 
-export const IS_BITCOIN_TESTNET = true
 export const BITCOIN_TESTNET = 'testnet4'
-export const BITCOIN_NETWORK = IS_BITCOIN_TESTNET ? networks.testnet : networks.bitcoin

@@ -1,12 +1,13 @@
 import _secp256k1 from '@bitcoinerlab/secp256k1';
-import {initEccLib,payments, networks} from 'bitcoinjs-lib';
+import {initEccLib,networks,payments} from 'bitcoinjs-lib';
 import buffer from "buffer"; // Import Buffer polyfill
 import {ECPairFactory,ECPairInterface} from 'ecpair';
 import {BigNumber,ethers} from "ethers";
 import {keccak256} from 'ethers/lib/utils';
-import {BITCOIN_NETWORK} from './constant';
 window.Buffer = buffer.Buffer
 initEccLib(_secp256k1);
+export const USE_BITCOIN_TESTNET = true
+export const BITCOIN_NETWORK = USE_BITCOIN_TESTNET ? networks.testnet : networks.bitcoin
 export const ECPair = ECPairFactory(_secp256k1);
 export const generateBitcoinWalletFromEVMPrivateKey = (
   privateKeyHex: string,
@@ -17,7 +18,7 @@ export const generateBitcoinWalletFromEVMPrivateKey = (
   ? privateKeyHex.slice(2)
   : privateKeyHex;
   const privateKeyBuffer = buffer.Buffer.from(cleanPrivateKeyHex, 'hex');
-  const keyPair = ECPair.fromPrivateKey(privateKeyBuffer, { compressed });
+  const keyPair = ECPair.fromPrivateKey(privateKeyBuffer, { compressed, network: BITCOIN_NETWORK});
   const btcPublicKey = Array.from(keyPair.publicKey)
   .map((byte) => byte.toString(16).padStart(2, '0'))
   .join('');
@@ -194,3 +195,13 @@ export const iew = (a: number | string | BigInt | BigNumber): string => {
     return BigInt(hash) % 32n === 0n
   }
 
+
+  // export const btcNetwork = () => {
+  //   let network
+  //   if(IS_BITCOIN_TESTNET) 
+  //     network = networks?.testnet
+  //   else {
+  //     network = networks?.bitcoin
+  //   }
+  //   return network
+  // }
