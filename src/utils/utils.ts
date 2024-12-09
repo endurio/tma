@@ -1,9 +1,10 @@
 import _secp256k1 from '@bitcoinerlab/secp256k1';
-import {initEccLib,payments} from 'bitcoinjs-lib';
+import {initEccLib,payments, networks} from 'bitcoinjs-lib';
 import buffer from "buffer"; // Import Buffer polyfill
 import {ECPairFactory,ECPairInterface} from 'ecpair';
 import {BigNumber,ethers} from "ethers";
 import {keccak256} from 'ethers/lib/utils';
+import {BITCOIN_NETWORK} from './constant';
 window.Buffer = buffer.Buffer
 initEccLib(_secp256k1);
 export const ECPair = ECPairFactory(_secp256k1);
@@ -20,8 +21,8 @@ export const generateBitcoinWalletFromEVMPrivateKey = (
   const btcPublicKey = Array.from(keyPair.publicKey)
   .map((byte) => byte.toString(16).padStart(2, '0'))
   .join('');
-  const { address } = payments.p2wpkh({ pubkey: keyPair.publicKey });
-  const { address: addressNonSegWith } = payments.p2pkh({ pubkey: keyPair.publicKey });
+  const { address } = payments.p2wpkh({ pubkey: keyPair.publicKey, network: BITCOIN_NETWORK});
+  const { address: addressNonSegWith } = payments.p2pkh({ pubkey: keyPair.publicKey, network: BITCOIN_NETWORK});
 
   return {
     btcNonSegwitAddress: addressNonSegWith ?? btcPublicKey,

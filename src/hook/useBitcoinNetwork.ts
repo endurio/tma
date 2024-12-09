@@ -4,6 +4,7 @@ import {
   IWeb3Account,
   IWeb3AccountUTXO
 } from "@/type";
+import {BITCOIN_TESTNET} from "@/utils/constant";
 import {
   axiosErrorEncode,
   encodeBitcoinBlockKeys,
@@ -28,7 +29,7 @@ export const useBitcoinNetwork = ({
       setLoading(true);
       setError("");
       const utxoRes = await axios.get(
-        `https://mempool.space/api/address/${address}/utxo`
+        `https://mempool.space/${BITCOIN_TESTNET + '/'}api/address/${address}/utxo`
       );
       const utxo: IWeb3AccountUTXO[] = utxoRes?.data;
 
@@ -61,20 +62,20 @@ export const useBitcoinNetwork = ({
     for (const utxo of utxos) {
       utxo.recipients = [];
       const blockHeight = await axios
-        .get(`https://mempool.space/api/blocks/tip/height`)
+        .get(`https://mempool.space/${BITCOIN_TESTNET + '/'}api/blocks/tip/height`)
         .then((res) => res.data)
         .catch((err) => {
           console.error("Failed to fetch block height:", err);
           return null;
         });
       const blocks: IBitcoinBlockDetail[] = (
-        await axios.get(`https://mempool.space/api/blocks/${blockHeight}`)
+        await axios.get(`https://mempool.space/${BITCOIN_TESTNET + '/'}api/blocks/${blockHeight}`)
       )?.data;
       const blocksData: IBitcoinBlockDetails = {};
       await Promise.all(
         blocks.map(async (block) => {
           const txs: string[] = (
-            await axios.get(`https://mempool.space/api/block/${block.id}/txids`)
+            await axios.get(`https://mempool.space/${BITCOIN_TESTNET + '/'}api/block/${block.id}/txids`)
           )?.data;
           if (!block || block.bits === 0x1d00ffff) {
             return; // Skip testnet blocks or invalid blocks
@@ -104,7 +105,7 @@ export const useBitcoinNetwork = ({
             break; // Bounty: block too old
           }
           for (const tx of block.txs) {
-            const txDetail = (await axios.get(`https://mempool.space/api/tx/${tx}`)).data
+            const txDetail = (await axios.get(`https://mempool.space/${BITCOIN_TESTNET + '/'}api/tx/${tx}`)).data
             if (!isHit(utxo.txid, tx)) {
               continue;
             }
@@ -133,11 +134,11 @@ export const useBitcoinNetwork = ({
                 console.log(
                   `Found the first UTXO with enough ${maxBounty} bounty outputs`,utxo
                 );
-                const rawHex = (await axios.get(`https://mempool.space/api/tx/${utxo.txid}/hex`)).data
+                const rawHex = (await axios.get(`https://mempool.space/${BITCOIN_TESTNET + '/'}api/tx/${utxo.txid}/hex`)).data
                 const _utxo: IWeb3AccountUTXO = utxo
                 _utxo.rawTxHex = rawHex
                 for(let i = 0; i < (_utxo?.recipients?.length || 0) ; i++) {
-                  const _rawHex = (await axios.get(`https://mempool.space/api/tx/${utxo.txid}/hex`)).data
+                  const _rawHex = (await axios.get(`https://mempool.space/${BITCOIN_TESTNET + '/'}api/tx/${utxo.txid}/hex`)).data
                   if( _utxo.recipients) _utxo.recipients[i].rawTxHex = _rawHex
                 }
                 // console.log('#utxo', _utxo)
@@ -174,7 +175,7 @@ export const useBitcoinNetwork = ({
       setLoading(true);
       setError("");
       const response = await axios.post(
-        `https://mempool.space/api/tx`,
+        `https://mempool.space/${BITCOIN_TESTNET + '/'}api/tx`,
         rawTxHex,
         {
           headers: {
