@@ -1,3 +1,4 @@
+import {networks} from "bitcoinjs-lib"
 import {ChainId} from "symbiosis-js-sdk"
 
 export const NATIVE_ADDRESS = '0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE'
@@ -21,3 +22,5 @@ export const MULTICALL_ADDRESS = '0xcA11bde05977b3631167028862bE2a173976CA11'
 export const FONT_SIZE_SM = '16px'
 export const FONT_SIZE_MD = '24px'
 export const FONT_SIZE_LG = '32px'
+
+export const BITCOIN_TESTNET = 'testnet4'

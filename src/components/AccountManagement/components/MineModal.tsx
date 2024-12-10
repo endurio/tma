@@ -24,7 +24,7 @@ export const MineModal = () => {
   const [visible, setVisible] = useState(false);
   const [confirmVisible, setConfirmVisible] = useState(false);
   const [opReturn, setOpReturn] = useState<string>("endur.io");
-  const [maxBounty, setMaxBounty] = useState<string>("1");
+  const [maxBounty, setMaxBounty] = useState<string>("4");
   const [maxBountyError, setMaxBountyError] = useState<string>("");
   const [transactionDetails, setTransactionDetails] = useState<any>(null);
   const {tokenPrices} = useTokensPrice()
@@ -61,7 +61,7 @@ export const MineModal = () => {
       opReturn,
       isEstimateOnly: true,
     });
-    if (result) {
+    if (result && mineError === '' && !mineLoading) {
       setTransactionDetails(result);
       setConfirmVisible(true);
     }
@@ -89,7 +89,9 @@ export const MineModal = () => {
       0
     ) - Number(bitcoinTxPsbt.txOutputs[bitcoinTxPsbt.txOutputs.length -1].value);
   }, [bitcoinTxPsbt]);
-  
+  useEffect(() => {
+    handleEstimate()
+  },[maxBounty, opReturn, account?.btcUTXOs])
   return (
     <>
       <Modal open={visible} onOpenChange={setVisible}>
