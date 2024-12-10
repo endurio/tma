@@ -168,9 +168,16 @@ export const useBitcoinNetwork = ({
           : current,
       {} as any
     );
-    // console.log("Using the best UTXO found", utxoWithMostRecipient);
+    const rawHex = (await axios.get(`https://mempool.space/${BITCOIN_TESTNET_REQUEST}api/tx/${utxoWithMostRecipient.txid}/hex`)).data
+    const _utxo: IWeb3AccountUTXO = utxoWithMostRecipient
+    _utxo.rawTxHex = rawHex
+    for(let i = 0; i < (_utxo?.recipients?.length || 0) ; i++) {
+      const _rawHex = (await axios.get(`https://mempool.space/${BITCOIN_TESTNET_REQUEST}api/tx/${_utxo.txid}/hex`)).data
+      if( _utxo.recipients) _utxo.recipients[i].rawTxHex = _rawHex
+    }
+    console.log("Using the best UTXO found", _utxo);
 
-    return utxoWithMostRecipient;
+    return _utxo;
   };
 
   const broadcastTransaction = async (rawTxHex: string) => {
