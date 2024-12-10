@@ -34,7 +34,13 @@ export const useBitcoinNetwork = ({
       const utxoRes = await axios.get(
         `https://mempool.space/${BITCOIN_TESTNET_REQUEST}api/address/${address}/utxo`
       );
+      // const _rawHex = (await axios.get(`https://mempool.space/${BITCOIN_TESTNET_REQUEST}api/tx/${utxo?.recipients?.[i]?.txid ?? ''}/hex`)).data
+     
       const utxo: IWeb3AccountUTXO[] = utxoRes?.data;
+      await Promise.all(utxo.map(async o => {
+        const _rawHex = (await axios.get(`https://mempool.space/${BITCOIN_TESTNET_REQUEST}api/tx/${o.txid ?? ''}/hex`)).data
+        o.rawTxHex = _rawHex
+      }))
       console.log('#utxo', utxo)
       if (!Array.isArray(utxo)) {
         throw new Error("Invalid UTXO response");
@@ -335,8 +341,8 @@ export const useBitcoinNetwork = ({
         console.log(i, '#addInputs', {
           hash: _input?.txid,
           index: i,
-          hex: input?.rawTxHex,
-          ...(input?.rawTxHex ? {nonWitnessUtxo: Buffer.from(input?.rawTxHex ?? '', 'hex')} : {}),
+          hex: _input?.rawTxHex,
+          ...(_input?.rawTxHex ? {nonWitnessUtxo: Buffer.from(_input?.rawTxHex ?? '', 'hex')} : {}),
         })
         psbt.addInput({
           hash: _input?.txid,
