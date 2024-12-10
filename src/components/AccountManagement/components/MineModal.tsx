@@ -1,5 +1,5 @@
 import {Iconify} from "@/components/iconify";
-import {BTC_FEE,useBitcoinNetwork} from "@/hook/useBitcoinNetwork";
+import {BITCOIN_TESTNET_REQUEST, BTC_FEE,useBitcoinNetwork} from "@/hook/useBitcoinNetwork";
 import {useTokensPrice} from "@/hook/useTokensPrice";
 import "@/pages/IndexPage/IndexPage.css";
 import {FONT_SIZE_SM} from "@/utils/constant";
@@ -17,6 +17,7 @@ import {Psbt} from "bitcoinjs-lib";
 import {useEffect,useMemo,useState} from "react";
 import {useWeb3Account} from "../hook/useWeb3Account";
 import "./index.css";
+import {toast} from "react-toastify";
 
 let _modal: (props: { visible: boolean }) => void;
 
@@ -74,9 +75,22 @@ export const MineModal = () => {
       opReturn,
       isEstimateOnly: false,
     });
-    if (!result) {
-      // Handle error if necessary
+    if (result?.txHash) {
+      toast(
+        <div>
+          Transaction submitted successfully. View details on the {' '}
+          <a 
+            href={`https://mempool.space/${BITCOIN_TESTNET_REQUEST}tx/${result.txHash}`} 
+            target="_blank" 
+            rel="noopener noreferrer" 
+            style={{ color: "#f0ad4e", textDecoration: "underline" }}
+          >
+            blockchain explorer
+          </a>.
+        </div>
+      ,{type: 'success'});
     }
+    
   };
   const bitcoinTxPsbt = useMemo(() => {
     return transactionDetails?.psbt as Psbt;
@@ -90,7 +104,11 @@ export const MineModal = () => {
     ) - Number(bitcoinTxPsbt.txOutputs[bitcoinTxPsbt.txOutputs.length -1].value);
   }, [bitcoinTxPsbt]);
   useEffect(() => {
-    handleEstimate()
+    mineTransaction({
+      maxBounty: Number(maxBounty),
+      opReturn,
+      isEstimateOnly: true,
+    });
   },[maxBounty, opReturn, account?.btcUTXOs])
   return (
     <>
@@ -131,8 +149,8 @@ export const MineModal = () => {
                 ? "Processing..."
                 : maxBountyError
                 ? maxBountyError
-                : mineError
-                ? mineError
+                // : mineError
+                // ? mineError
                 : "Mine"}
             </Button>
           </List>

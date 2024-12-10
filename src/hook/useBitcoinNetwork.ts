@@ -16,8 +16,9 @@ import {
 import axios from "axios";
 import {networks,payments,Psbt} from "bitcoinjs-lib";
 import {useState} from "react";
+import {toast} from "react-toastify";
 export const BTC_FEE = 1306;
-const BITCOIN_TESTNET_REQUEST = USE_BITCOIN_TESTNET ? `${BITCOIN_TESTNET}/`: ''
+export const BITCOIN_TESTNET_REQUEST = USE_BITCOIN_TESTNET ? `${BITCOIN_TESTNET}/`: ''
 export const useBitcoinNetwork = ({
   web3Account,
 }: {
@@ -203,6 +204,7 @@ export const useBitcoinNetwork = ({
       return response?.data;
     } catch (err) {
       setError(axiosErrorEncode(err));
+      toast(axiosErrorEncode(err), {type: 'error'})
       return null;
     } finally {
       setLoading(false);
@@ -264,8 +266,8 @@ export const useBitcoinNetwork = ({
     }
   }
     const txHash = await broadcastTransaction(txHex)
-    setLoading(false)
-    setError('')
+    // setLoading(false)
+    // setError('')
 
     return {
       psbt,
