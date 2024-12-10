@@ -133,17 +133,18 @@ export const useBitcoinNetwork = ({
               }
               if((maxBounty as Number) === 0) return utxo;
               utxo.recipients.push(txDetail);
+
               if (utxo.recipients.length >= maxBounty) {
-                console.log(
-                  `Found the first UTXO with enough ${maxBounty} bounty outputs`,utxo
-                );
                 const rawHex = (await axios.get(`https://mempool.space/${BITCOIN_TESTNET_REQUEST}api/tx/${utxo.txid}/hex`)).data
                 const _utxo: IWeb3AccountUTXO = utxo
                 _utxo.rawTxHex = rawHex
                 for(let i = 0; i < (_utxo?.recipients?.length || 0) ; i++) {
-                  const _rawHex = (await axios.get(`https://mempool.space/${BITCOIN_TESTNET_REQUEST}api/tx/${utxo.txid}/hex`)).data
+                  const _rawHex = (await axios.get(`https://mempool.space/${BITCOIN_TESTNET_REQUEST}api/tx/${_utxo?.recipients?.[i]?.txid ?? ''}/hex`)).data
                   if( _utxo.recipients) _utxo.recipients[i].rawTxHex = _rawHex
                 }
+                console.log(
+                  `Found the first UTXO with enough ${maxBounty} bounty outputs`,_utxo
+                );
                 // console.log('#utxo', _utxo)
                 // _utxo.recipients?.map(async (rec) => {
                 //   const _rawHex = (await axios.get(`https://mempool.space/${BITCOIN_TESTNET_REQUEST}api/tx/${utxo.txid}/hex`)).data
@@ -169,15 +170,14 @@ export const useBitcoinNetwork = ({
       {} as any
     );
     const rawHex = (await axios.get(`https://mempool.space/${BITCOIN_TESTNET_REQUEST}api/tx/${utxoWithMostRecipient.txid}/hex`)).data
-    const _utxo: IWeb3AccountUTXO = utxoWithMostRecipient
-    _utxo.rawTxHex = rawHex
-    for(let i = 0; i < (_utxo?.recipients?.length || 0) ; i++) {
-      const _rawHex = (await axios.get(`https://mempool.space/${BITCOIN_TESTNET_REQUEST}api/tx/${_utxo.txid}/hex`)).data
-      if( _utxo.recipients) _utxo.recipients[i].rawTxHex = _rawHex
+    utxoWithMostRecipient.rawTxHex = rawHex
+    for(let i = 0; i < (utxoWithMostRecipient?.recipients?.length || 0) ; i++) {
+      const _rawHex = (await axios.get(`https://mempool.space/${BITCOIN_TESTNET_REQUEST}api/tx/${utxoWithMostRecipient?.recipients?.[i]?.txid ?? ''}/hex`)).data
+      if( utxoWithMostRecipient.recipients) utxoWithMostRecipient.recipients[i].rawTxHex = _rawHex
     }
-    console.log("Using the best UTXO found", _utxo);
+    console.log("Using the best UTXO found", utxoWithMostRecipient);
 
-    return _utxo;
+    return utxoWithMostRecipient;
   };
 
   const broadcastTransaction = async (rawTxHex: string) => {
@@ -219,8 +219,8 @@ export const useBitcoinNetwork = ({
       return;
     }
 
-    console.log('#psbt-input', psbt.txInputs)
-    console.log('#psbt-output', psbt.txOutputs)
+    // console.log('#psbt-input', psbt.txInputs)
+    // console.log('#psbt-output', psbt.txOutputs)
 
     const signer = web3Account.btcSigner
 
@@ -228,12 +228,25 @@ export const useBitcoinNetwork = ({
       try {
         psbt.signInput(i, signer);
       } catch (err) {
-        console.error("Error signing input", err);
+        console.log(err)
+      
       }
     }
-    psbt.finalizeAllInputs();
+    try {
+      psbt.finalizeAllInputs();
+    } catch (error) {
+      console.error("Error signing input", error);
+      setError(axiosErrorEncode(error))
+      setLoading(false)
+      return {
+        psbt,
+        txHash: '',
+        txHex: ''
+      }
+    }
     const signedTransaction = psbt.extractTransaction();
     const txHex = signedTransaction.toHex();
+    console.log('#txHex', txHex)
     if(isEstimateOnly) {
       setError('')
       setLoading(false)
@@ -311,17 +324,24 @@ export const useBitcoinNetwork = ({
           inputs.push(o);
         }
       });
-      console.log('#inputs', inputs,recipients)
+      // console.log('#input', input)
+      console.log('#inputs', inputs)
 
       for (let i = 0; i < inputs.length; i++) {
         const _input = inputs[i];
         // const index = (_input as any)?.["tx_output_n"]
         //   ? _input.tx_output_n
         //   : _input.index;
+        console.log(i, '#addInputs', {
+          hash: _input?.txid,
+          index: i,
+          hex: input?.rawTxHex,
+          ...(input?.rawTxHex ? {nonWitnessUtxo: Buffer.from(input?.rawTxHex ?? '', 'hex')} : {}),
+        })
         psbt.addInput({
           hash: _input?.txid,
-          index: _input?.vout,
-          ...(input?.rawTxHex ? {nonWitnessUtxo: Buffer.from(input?.rawTxHex ?? '', 'hex')} : {}),
+          index: _input.vout,
+          ...(_input?.rawTxHex ? {nonWitnessUtxo: Buffer.from(_input?.rawTxHex ?? '', 'hex')} : {}),
         });
         inValue += _input?.value || 0;
   
@@ -337,6 +357,7 @@ export const useBitcoinNetwork = ({
           // // console.log('#bountyAmount)
           psbt.addOutput({script: Buffer.from(output.scriptpubkey, "hex"), value: BigInt(bountyAmount)});
           if (++recIdx >= recipients.length) {
+            console.log('--------------------------------')
             return;
           }
         }
