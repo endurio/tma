@@ -6,6 +6,7 @@ import {BigNumber,Contract,ethers,providers,Wallet} from "ethers";
 import {Token} from "symbiosis-js-sdk";
 import {NATIVE_ADDRESS,SYMBIOSIS_URL_API} from "./constant";
 import {axiosErrorEncode} from "./utils";
+import {toast} from "react-toastify";
 export const fetchSymbiosisRouter = async ({
   tokenIn,
   tokenOut,
@@ -146,6 +147,7 @@ export const swapCrossChain = async ({
     console.log("Swap Tx Sent:", swapTx.hash);
 
     const receipt = await swapTx.wait();
+    toast(`<div> Transaction submitted successfully. View details on the <a href="https://https://arbiscan.io/tx/${receipt.transactionHash}" target="_blank" rel="noopener noreferrer" style={{ color: "#f0ad4e", textDecoration: "underline" }}>blockchain explorer</a>.</div>`,{type: 'success'});
     console.log("Swap Tx Confirmed:", receipt.transactionHash);
 
     return {
@@ -154,6 +156,9 @@ export const swapCrossChain = async ({
       receipt
     }
   } catch (error:any) {
+    if(!estimateOnly) {
+      toast(axiosErrorEncode(error),{type: 'error'})
+    }
     console.error("Swap Cross Chain Error:", error);
     return axiosErrorEncode(error)
   }

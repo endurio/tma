@@ -107,7 +107,7 @@ export const SwapModal = () => {
         tokenOut,
         approveOnly: isNeedToApprove,
         estimateOnly: false,
-      }).then(() => {
+      }).then((res) => {
         setTokenAmountIn("");
         setVisible(false);
       });

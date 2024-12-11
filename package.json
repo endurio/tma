@@ -36,6 +36,7 @@
     "react-dom": "^18.2.0",
     "react-qr-code": "^2.0.15",
     "react-router-dom": "^6.23.0",
+    "react-toastify": "^10.0.6",
     "ripemd160": "^2.0.2",
     "symbiosis-js-sdk": "^3.4.11",
     "tiny-secp256k1": "^2.2.3",

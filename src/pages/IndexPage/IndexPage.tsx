@@ -9,6 +9,8 @@ import {DepositModal} from "@/components/AccountManagement/components/DepositMod
 import {WithdrawModal} from "@/components/AccountManagement/components/WithdrawModal";
 import {SwapModal} from "@/components/AccountManagement/components/SwapModal";
 import {MineModal} from "@/components/AccountManagement/components/MineModal";
+import {ToastContainer} from "react-toastify";
+import 'react-toastify/dist/ReactToastify.css';
 
 interface AppContextType {
   web3Account?: IWeb3Account;
@@ -52,6 +54,8 @@ export const IndexPage: FC = () => {
       <SwapModal/>
       <MineModal/>
       <WithdrawModal/>
+      <ToastContainer theme="dark"/>
+
       <Page back={false}>
         <List>
           <AccountManagement />
