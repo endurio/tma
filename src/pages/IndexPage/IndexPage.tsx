@@ -54,7 +54,7 @@ export const IndexPage: FC = () => {
       <SwapModal/>
       <MineModal/>
       <WithdrawModal/>
-      <ToastContainer />
+      <ToastContainer theme="dark"/>
 
       <Page back={false}>
         <List>
