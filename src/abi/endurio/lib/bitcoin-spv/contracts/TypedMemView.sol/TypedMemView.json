@@ -1,0 +1,24 @@
+{
+  "_format": "hh-sol-artifact-1",
+  "contractName": "TypedMemView",
+  "sourceName": "contracts/lib/bitcoin-spv/contracts/TypedMemView.sol",
+  "abi": [
+    {
+      "inputs": [],
+      "name": "NULL",
+      "outputs": [
+        {
+          "internalType": "bytes32",
+          "name": "",
+          "type": "bytes32"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    }
+  ],
+  "bytecode": "0x6080806040523460175760899081601d823930815050f35b600080fdfe6080806040526004361015601257600080fd5b60003560e01c63f26be3fc14602657600080fd5b60007ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffc360112607757807fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff60209252f35b600080fdfea164736f6c634300081c000a",
+  "deployedBytecode": "0x6080806040526004361015601257600080fd5b60003560e01c63f26be3fc14602657600080fd5b60007ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffc360112607757807fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff60209252f35b600080fdfea164736f6c634300081c000a",
+  "linkReferences": {},
+  "deployedLinkReferences": {}
+}

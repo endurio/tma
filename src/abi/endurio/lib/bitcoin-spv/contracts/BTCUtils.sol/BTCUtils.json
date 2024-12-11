@@ -1,0 +1,63 @@
+{
+  "_format": "hh-sol-artifact-1",
+  "contractName": "BTCUtils",
+  "sourceName": "contracts/lib/bitcoin-spv/contracts/BTCUtils.sol",
+  "abi": [
+    {
+      "inputs": [],
+      "name": "DIFF1_TARGET",
+      "outputs": [
+        {
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "ERR_BAD_ARG",
+      "outputs": [
+        {
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "RETARGET_PERIOD",
+      "outputs": [
+        {
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "RETARGET_PERIOD_BLOCKS",
+      "outputs": [
+        {
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    }
+  ],
+  "bytecode": "0x6080806040523460195761016c908161001f823930815050f35b600080fdfe608080604052600436101561001357600080fd5b60003560e01c908163056e04ec1461012a575080638cc71569146100f45780638db69e60146100a05763d4258ca71461004b57600080fd5b60007ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffc36011261009b5760206040517bffff00000000000000000000000000000000000000000000000000008152f35b600080fd5b60007ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffc36011261009b5760206040517fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff8152f35b60007ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffc36011261009b5760206040516107e08152f35b60007ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffc36011261009b57806212750060209252f3fea164736f6c634300081c000a",
+  "deployedBytecode": "0x608080604052600436101561001357600080fd5b60003560e01c908163056e04ec1461012a575080638cc71569146100f45780638db69e60146100a05763d4258ca71461004b57600080fd5b60007ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffc36011261009b5760206040517bffff00000000000000000000000000000000000000000000000000008152f35b600080fd5b60007ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffc36011261009b5760206040517fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff8152f35b60007ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffc36011261009b5760206040516107e08152f35b60007ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffc36011261009b57806212750060209252f3fea164736f6c634300081c000a",
+  "linkReferences": {},
+  "deployedLinkReferences": {}
+}
