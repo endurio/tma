@@ -30,7 +30,7 @@ export const MineModal = () => {
   const [transactionDetails, setTransactionDetails] = useState<any>(null);
   const {tokenPrices} = useTokensPrice()
 
-  const { account } = useWeb3Account();
+  const { account,fetchWeb3AccountState } = useWeb3Account();
   const {
     mineTransaction,
     loading: mineLoading,
@@ -76,6 +76,7 @@ export const MineModal = () => {
       isEstimateOnly: false,
     });
     if (result?.txHash) {
+      setVisible(false)
       toast(
         <div>
           Transaction submitted successfully. View details on the {' '}
@@ -89,6 +90,7 @@ export const MineModal = () => {
           </a>.
         </div>
       ,{type: 'success'});
+      await fetchWeb3AccountState()
     }
     
   };

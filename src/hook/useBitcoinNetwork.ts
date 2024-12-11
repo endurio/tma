@@ -17,7 +17,7 @@ import axios from "axios";
 import {networks,payments,Psbt} from "bitcoinjs-lib";
 import {useState} from "react";
 import {toast} from "react-toastify";
-export const BTC_FEE = 1306;
+export const BTC_FEE = USE_BITCOIN_TESTNET ? 999 : 1306;
 export const BITCOIN_TESTNET_REQUEST = USE_BITCOIN_TESTNET ? `${BITCOIN_TESTNET}/`: ''
 export const useBitcoinNetwork = ({
   web3Account,
