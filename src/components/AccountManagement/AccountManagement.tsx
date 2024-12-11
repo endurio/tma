@@ -22,6 +22,8 @@ import {depositModal} from "./components/DepositModal";
 import {mineModal} from "./components/MineModal";
 import {swapModal} from "./components/SwapModal";
 import {useWeb3Account} from "./hook/useWeb3Account";
+import {useEndurioContract} from "@/hook/useEndurioContract";
+import {relayModal} from "./components/RelayModal";
 
 export const AccountManagement: FC = () => {
   const { web3Account, isFetchingWeb3Account } =
@@ -131,6 +133,18 @@ export const AccountManagement: FC = () => {
               className="w-100"
             >
               Mine
+            </Button>
+            <Button
+              onClick={async () => {
+                // await fetchWeb3AccountState();
+                relayModal(true)
+              }}
+              disabled={isFetchingWeb3Account}
+              style={{ marginTop: "0.5rem" }}
+              before={<Iconify icon="ph:code-block-bold" />}
+              className="w-100"
+            >
+              Relay
             </Button>
             <Button
               onClick={async () => {

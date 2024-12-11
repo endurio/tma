@@ -242,4 +242,90 @@ export type IBitcoinBlockTx = {
   }
 }
 
+export type IBitcoinTxMerkleProof = {
+  block_height: number
+  merkle: Array<string>
+  pos: number
+}
+
+
 export type ITokensPrice = {[symbol: string]: number}
+
+
+export interface IConfigs {
+  UUPSVoid: string
+  ERC1967Proxy: string
+  ProxyPoR: string
+  ProxyRefNet: string
+  ProxyBrands: string
+  Endurio: string
+  Vault: string
+  PoR: string
+  RefNet: string
+}
+
+
+export type IParamSubmit = {
+  // brand
+  payer: string; // Solidity `address` maps to `string`
+
+  // block
+  header: Uint8Array; // Solidity `bytes` maps to `Uint8Array`
+  merkleIndex: number; // Solidity `uint32` maps to `number`
+  merkleProof: Uint8Array; // Solidity `bytes` maps to `Uint8Array`
+
+  // tx
+  version: number; // Solidity `uint32` maps to `number`
+  locktime: number; // Solidity `uint32` maps to `number`
+  vin: Uint8Array; // Solidity `bytes` maps to `Uint8Array`
+  vout: Uint8Array; // Solidity `bytes` maps to `Uint8Array`
+
+  // PoR
+  inputIndex: number; // Solidity `uint32` maps to `number`
+  memoLength: number; // Solidity `uint32` maps to `number`
+  pubkeyPos: number; // Solidity `uint32` maps to `number`
+};
+
+export type IParamOutpoint = {
+  // tx
+  version: number; // Solidity `uint32` maps to `number`
+  locktime: number; // Solidity `uint32` maps to `number`
+  vin: Uint8Array; // Solidity `bytes` maps to `Uint8Array`
+  vout: Uint8Array; // Solidity `bytes` maps to `Uint8Array`
+
+  pkhPos: number; // Solidity `uint32` maps to `number`
+};
+
+export type IParamBounty = {
+  // block
+  header: Uint8Array; // Solidity `bytes` maps to `Uint8Array`
+  merkleIndex: number; // Solidity `uint32` maps to `number`
+  merkleProof: Uint8Array; // Solidity `bytes` maps to `Uint8Array`
+
+  // tx
+  version: number; // Solidity `uint32` maps to `number`
+  locktime: number; // Solidity `uint32` maps to `number`
+  vin: Uint8Array; // Solidity `bytes` maps to `Uint8Array`
+  vout: Uint8Array; // Solidity `bytes` maps to `Uint8Array`
+};
+
+export type IRelaySubmitParams = [IParamSubmit, IParamOutpoint, IParamBounty]
+export type IInputTxParams = {
+  tx: IBitcoinBlockTx;
+  block: IBitcoinBlockDetail;
+  brand: string;
+  payer: string;
+  inputIndex: number;
+  pubkeyPos?: number;
+};
+
+export type IInputOutpointParams = {
+  txHash: string;
+  inputIdx?: number;
+  pkhPos?: number;
+  dxHash?: string;
+};
+
+export type IInputBountyParams = {
+  txHash?: string;
+};

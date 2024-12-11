@@ -42,7 +42,7 @@ export const useBitcoinNetwork = ({
         const _rawHex = (await axios.get(`https://mempool.space/${BITCOIN_TESTNET_REQUEST}api/tx/${o.txid ?? ''}/hex`)).data
         o.rawTxHex = _rawHex
       }))
-      console.log('#utxo', utxo)
+      // console.log('#utxo', utxo)
       if (!Array.isArray(utxo)) {
         throw new Error("Invalid UTXO response");
       }
@@ -333,19 +333,19 @@ export const useBitcoinNetwork = ({
         }
       });
       // console.log('#input', input)
-      console.log('#inputs', inputs)
+      // console.log('#inputs', inputs)
 
       for (let i = 0; i < inputs.length; i++) {
         const _input = inputs[i];
         // const index = (_input as any)?.["tx_output_n"]
         //   ? _input.tx_output_n
         //   : _input.index;
-        console.log(i, '#addInputs', {
-          hash: _input?.txid,
-          index: i,
-          hex: _input?.rawTxHex,
-          ...(_input?.rawTxHex ? {nonWitnessUtxo: Buffer.from(_input?.rawTxHex ?? '', 'hex')} : {}),
-        })
+        // console.log(i, '#addInputs', {
+        //   hash: _input?.txid,
+        //   index: i,
+        //   hex: _input?.rawTxHex,
+        //   ...(_input?.rawTxHex ? {nonWitnessUtxo: Buffer.from(_input?.rawTxHex ?? '', 'hex')} : {}),
+        // })
         psbt.addInput({
           hash: _input?.txid,
           index: _input.vout,

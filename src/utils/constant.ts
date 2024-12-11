@@ -24,3 +24,4 @@ export const FONT_SIZE_MD = '24px'
 export const FONT_SIZE_LG = '32px'
 
 export const BITCOIN_TESTNET = 'testnet4'
+
