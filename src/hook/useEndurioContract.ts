@@ -14,7 +14,8 @@ export const useEndurioContract = () => {
   const performRelay = async () => {
     const relayContract = new Contract(configs.PoR, porAbi.abi, account?.evmSigner)
     const IRelaySubmitParams: IRelaySubmitParams | [] = []
-    await prepareSubmit('c6d5a4879077bccc8d8f14ae7d0c683a0818f554f6bb764a50522150b7c8fa96')
+    const params = await prepareSubmit('0d3097c0c60658aaa024b6d9e2b18a550af886b5ae7507e3e2ace8dd3dc175ad')
+    // relayContract.callStatic.
   }
   const performClaim = async () => {
 

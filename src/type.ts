@@ -309,23 +309,27 @@ export type IParamBounty = {
   vout: Uint8Array; // Solidity `bytes` maps to `Uint8Array`
 };
 
-export type IRelaySubmitParams = [IParamSubmit, IParamOutpoint, IParamBounty]
+export type IRelaySubmitParams = any[]
 export type IInputTxParams = {
   tx: IBitcoinBlockTx;
+  txMerkleProof: IBitcoinTxMerkleProof;
   block: IBitcoinBlockDetail;
-  brand: string;
-  payer: string;
-  inputIndex: number;
+  brand?: string;
+  payer?: string;
+  inputIndex?: number;
   pubkeyPos?: number;
 };
 
 export type IInputOutpointParams = {
-  txHash: string;
+  tx: IBitcoinBlockTx;
   inputIdx?: number;
   pkhPos?: number;
   dxHash?: string;
 };
 
 export type IInputBountyParams = {
-  txHash?: string;
+  tx: IBitcoinBlockTx;
+  txMerkleProof: IBitcoinTxMerkleProof;
+
+  block: IBitcoinBlockDetail
 };
