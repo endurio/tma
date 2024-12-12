@@ -1,13 +1,12 @@
-import {useEffect, useState} from "react";
-import {useConfigs} from "./useConfigs";
-import {Contract, Signer, Wallet} from "ethers";
-import porAbi from "@/abi/endurio/PoR.sol/PoR.json"
+import porAbi from "@/abi/endurio/PoR.sol/PoR.json";
+import {PoR} from "@/app/contracts";
 import {useWeb3Account} from "@/components/AccountManagement/hook/useWeb3Account";
+import {JSONProvider} from "@/config";
 import {IRelaySubmitParams} from "@/type";
 import {prepareSubmit} from "@/utils/endurio";
-import {JSONProvider} from "@/config";
-import {PoR__factory} from "@/app/contracts/factories/index"
-import {PoR} from "@/app/contracts";
+import {Contract,Wallet} from "ethers";
+import {useState} from "react";
+import {useConfigs} from "./useConfigs";
 export const useEndurioContract = () => {
   const [relay, setRelay] = useState<string>('');
   const [loading, setLoading] = useState(false);
@@ -21,7 +20,8 @@ export const useEndurioContract = () => {
       const signer = new Wallet(account.evmPrivateKey, JSONProvider);
       const relayContract = new Contract(configs.PoR, porAbi.abi, signer) as PoR
       const IRelaySubmitParams: IRelaySubmitParams | [] = []
-      const {params, outpoint, bounty} = await prepareSubmit('c6d5a4879077bccc8d8f14ae7d0c683a0818f554f6bb764a50522150b7c8fa96', account.evmAddress)
+      // https://mempool.space/testnet4/tx/64abdcbb7cd7cc2bf14d3540a5c896c5ed06ff6b205d4b1b2cf596815d22c3cf
+      const {params, outpoint, bounty} = await prepareSubmit('64abdcbb7cd7cc2bf14d3540a5c896c5ed06ff6b205d4b1b2cf596815d22c3cf', account.evmAddress)
       const BOUNTY_TIME = await relayContract.BOUNTY_RATE()
       console.log('#relay', relayContract)
       console.log('#relay bounty', BOUNTY_TIME)

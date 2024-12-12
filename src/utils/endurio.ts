@@ -191,10 +191,15 @@ async function prepareBountyParams({
   txMerkleProof,
   block,
 }: IInputBountyParams): Promise<PoR.ParamBountyStruct[]> {
-  const samplingIndex =
-    1 + Number(BigInt("0x" + block.id) % BigInt(tx.vout.length - 2));
+  // let samplingIndex = 1
+  // try {
+  //   const _samplingIndex = 1 + Number(BigInt("0x" + block.id) % BigInt(tx.vout.length - 2));
+  //   samplingIndex = _samplingIndex
+  // } catch (error) {
+    
+  // }
 
-  const samplingOutput = tx.vout[samplingIndex];
+  // const samplingOutput = tx.vout[samplingIndex];
   // const recipient = samplingOutput.scriptpubkey_address;
   // let recipientTx;
   // for (let offset = 0; !recipientTx; offset+= 50) {
