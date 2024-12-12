@@ -312,6 +312,7 @@ export type IParamBounty = {
 export type IRelaySubmitParams = any[]
 export type IInputTxParams = {
   tx: IBitcoinBlockTx;
+  evmAddress:string;
   txMerkleProof: IBitcoinTxMerkleProof;
   block: IBitcoinBlockDetail;
   brand?: string;
