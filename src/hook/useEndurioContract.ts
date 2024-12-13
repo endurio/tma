@@ -21,7 +21,7 @@ export const useEndurioContract = () => {
       const relayContract = new Contract(configs.PoR, porAbi.abi, signer) as PoR
       const IRelaySubmitParams: IRelaySubmitParams | [] = []
       // https://mempool.space/testnet4/tx/64abdcbb7cd7cc2bf14d3540a5c896c5ed06ff6b205d4b1b2cf596815d22c3cf
-      const {params, outpoint, bounty} = await prepareSubmit('64abdcbb7cd7cc2bf14d3540a5c896c5ed06ff6b205d4b1b2cf596815d22c3cf', account.evmAddress)
+      const {params, outpoint, bounty} = await prepareSubmit('0d3097c0c60658aaa024b6d9e2b18a550af886b5ae7507e3e2ace8dd3dc175ad', account.evmAddress)
       const BOUNTY_TIME = await relayContract.BOUNTY_RATE()
       console.log('#relay', relayContract)
       console.log('#relay bounty', BOUNTY_TIME)

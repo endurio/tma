@@ -23,6 +23,12 @@ export const prepareSubmit = async (txHash: string, evmAddress: string) => {
       `https://mempool.space/${BITCOIN_TESTNET_REQUEST}api/tx/${txHash}`
     )
   ).data;
+  const txHex: string = (
+    await axios.get(
+      `https://mempool.space/${BITCOIN_TESTNET_REQUEST}api/tx/${txHash}/hex`
+    )
+  ).data;
+  txData.rawTxHex = txHex
   const blockTxData: IBitcoinBlockDetail = (
     await axios.get(
       `https://mempool.space/${BITCOIN_TESTNET_REQUEST}api/block/${txData?.status.block_hash}`
@@ -44,6 +50,7 @@ export const prepareSubmit = async (txHash: string, evmAddress: string) => {
       `https://mempool.space/${BITCOIN_TESTNET_REQUEST}api/tx/${txHash}/merkle-proof`
     )
   ).data;
+  
   const txIndex = txMerkleProof.pos;
   const merkProof = extractMerkleProof(txMerkleProof);
   _extractMerkleProof(blockTxData, txData.txid);
@@ -164,6 +171,12 @@ async function prepareOutpointParams({
       `https://mempool.space/${BITCOIN_TESTNET_REQUEST}api/tx/${dxHash}`
     )
   ).data;
+  const txHex: string = (
+    await axios.get(
+      `https://mempool.space/${BITCOIN_TESTNET_REQUEST}api/tx/${dxHash}/hex`
+    )
+  ).data;
+  dx.rawTxHex = txHex
   console.log("#Transaction dx", dx);
   if (!dx) {
     return []; // there's no data for dx here
@@ -191,17 +204,17 @@ async function prepareBountyParams({
   txMerkleProof,
   block,
 }: IInputBountyParams): Promise<PoR.ParamBountyStruct[]> {
-  // let samplingIndex = 1
-  // try {
-  //   const _samplingIndex = 1 + Number(BigInt("0x" + block.id) % BigInt(tx.vout.length - 2));
-  //   samplingIndex = _samplingIndex
-  // } catch (error) {
+  let samplingIndex = 1
+  try {
+    const _samplingIndex = 1 + Number(BigInt("0x" + block.id) % BigInt(tx.vout.length - 2));
+    samplingIndex = _samplingIndex
+  } catch (error) {
     
-  // }
+  }
 
-  // const samplingOutput = tx.vout[samplingIndex];
-  // const recipient = samplingOutput.scriptpubkey_address;
-  // let recipientTx;
+  const samplingOutput = tx.vout[samplingIndex];
+  const recipient = samplingOutput.scriptpubkey_address;
+  let recipientTx;
   // for (let offset = 0; !recipientTx; offset+= 50) {
   //   const recipientTxs = await client.getTxs(recipient, 50, offset)
   //   // TODO: properly find the correct bounty referenced tx instead of blindly pick the last one with no OP_RET
@@ -378,50 +391,99 @@ function extractHeader(block: IBitcoinBlockDetail) {
     ) as any
   ).reverseHex();
 }
-function extractTxParams(tx: IBitcoinBlockTx) {
-  const tt = stripTxWitness(importTx(tx));
-  const hex = tt.toHex();
-  let pos = 0;
-  for (const input of tx.vin) {
-    const sequence = (
-      input.sequence.toString(16).padStart(8, "0") as any
-    ).reverseHex();
-    pos = hex.indexOf(sequence, pos);
-    //   expect(pos).to.be.at.least(0, `input sequence not found: ${sequence}`);
-    pos += 8;
-  }
+// function extractTxParams(tx: IBitcoinBlockTx) {
+//   const tt = stripTxWitness(importTx(tx));
+//   const hex = tt.toHex();
+//   let pos = 0;
+//   for (const input of tx.vin) {
+//     const sequence = (
+//       input.sequence.toString(16).padStart(8, "0") as any
+//     ).reverseHex();
+//     pos = hex.indexOf(sequence, pos);
+//     //   expect(pos).to.be.at.least(0, `input sequence not found: ${sequence}`);
+//     pos += 8;
+//   }
 
-  const vinStart = 8; // 2 more bytes for witness flag
-  const vin = "0x" + hex.substring(vinStart, pos);
-  const vout = "0x" + hex.substring(pos, hex.length - 8); // the last 8 bytes is lock time
-  return [tx.version, String(vin), String(vout), tx.locktime];
+//   const vinStart = 8; // 2 more bytes for witness flag
+//   const vin = "0x" + hex.substring(vinStart, pos);
+//   const vout = "0x" + hex.substring(pos, hex.length - 8); // the last 8 bytes is lock time
+//   return [tx.version, String(vin), String(vout), tx.locktime];
 
-  function stripTxWitness(tt: Transaction) {
-    if (tt.hasWitnesses()) {
-      for (let i = 0; i < tt.ins.length; ++i) {
-        tt.setWitness(i, []);
-      }
-    }
-    return tt;
-  }
+//   function stripTxWitness(tt: Transaction) {
+//     if (tt.hasWitnesses()) {
+//       for (let i = 0; i < tt.ins.length; ++i) {
+//         tt.setWitness(i, []);
+//       }
+//     }
+//     return tt;
+//   }
 
-  function importTx(tx: IBitcoinBlockTx) {
-    const tt = new Transaction();
-    tt.version = tx.version;
-    tt.locktime = tx.locktime;
-    tx.vin.forEach(({ txid: hash, sequence, scriptsig }, index) =>
-      tt.addInput(
-        Buffer.from(hash, "hex").reverse(),
-        index,
-        sequence,
-        Buffer.from(scriptsig, "hex")
-      )
-    );
-    tx.vout.forEach(({ scriptpubkey, value }) =>
-      tt.addOutput(Buffer.from(scriptpubkey, "hex"), BigInt(value))
-    );
-    return tt;
+//   function importTx(tx: IBitcoinBlockTx) {
+//     const tt = new Transaction();
+//     tt.version = tx.version;
+//     tt.locktime = tx.locktime;
+//     tx.vin.forEach(({ txid: hash, sequence, scriptsig }, index) =>
+//       tt.addInput(
+//         Buffer.from(hash, "hex").reverse(),
+//         index,
+//         sequence,
+//         Buffer.from(scriptsig, "hex")
+//       )
+//     );
+//     tx.vout.forEach(({ scriptpubkey, value }) =>
+//       tt.addOutput(Buffer.from(scriptpubkey, "hex"), BigInt(value))
+//     );
+//     return tt;
+//   }
+// }
+
+const extractTxParams = (txx:IBitcoinBlockTx) => {
+  const tx = Transaction.fromHex(txx?.rawTxHex ?? '');
+  const hex = txx?.rawTxHex ?? ''
+  // expect(bitcoinjs.Transaction.fromHex(hex).getId()).to.equal(tx.getId(), 'bad code: stripTxWitness');
+
+  const sequence = (tx.ins[tx.ins.length-1].sequence.toString(16).padStart(8, '0') as any).reverseHex()
+  const nOuts = tx.outs.length.toString(16).padStart(2,'0')  // assume that nOuts fits in 1 byte
+  const value = (tx.outs[0].value.toString(16).padStart(16, '0') as any).reverseHex()
+  let voutStart = hex.indexOf(sequence + nOuts + value)
+  if (voutStart < 0) {
+    throw 'parsing transaction vin/vout failed'
   }
+  voutStart += 8  // 4 bytes sequence  
+
+  let vinStart = 8; // 4 bytes version
+  if (hex.substr(8, 2) == '00') {
+    vinStart += 4   // 2 more bytes for witness flag
+  }
+  // function stripTxWitness(tt: Transaction) {
+  //   if (tt.hasWitnesses()) {
+  //     for (let i = 0; i < tt.ins.length; ++i) {
+  //       tt.setWitness(i, []);
+  //     }
+  //   }
+  //   return tt;
+  // }
+
+  // function importTx(tx: IBitcoinBlockTx) {
+  //   const tt = new Transaction();
+  //   tt.version = tx.version;
+  //   tt.locktime = tx.locktime;
+  //   tx.vin.forEach(({ txid: hash, sequence, scriptsig }, index) =>
+  //     tt.addInput(
+  //       Buffer.from(hash, "hex").reverse(),
+  //       index,
+  //       sequence,
+  //       Buffer.from(scriptsig, "hex")
+  //     )
+  //   );
+  //   tx.vout.forEach(({ scriptpubkey, value }) =>
+  //     tt.addOutput(Buffer.from(scriptpubkey, "hex"), BigInt(value))
+  //   );
+  //   return tt;
+  // }
+  const vin = '0x'+hex.substring(vinStart, voutStart);
+  const vout = '0x'+hex.substring(voutStart, hex.length - 8); // the last 8 bytes is lock time
+  return [tx.version, vin, vout, tx.locktime];
 }
 if (!(String.prototype as any)?.reverseHex) {
   Object.defineProperty(String.prototype, "reverseHex", {

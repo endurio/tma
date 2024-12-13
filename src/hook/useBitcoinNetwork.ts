@@ -84,31 +84,35 @@ export const useBitcoinNetwork = ({
       const blocksData: IBitcoinBlockDetails = {};
       await Promise.all(
         blocks.map(async (block) => {
-          const txs: string[] = (
-            await axios.get(`https://mempool.space/${BITCOIN_TESTNET_REQUEST}api/block/${block.id}/txids`)
-          )?.data;
-          if (!block || block.bits === 0x1d00ffff) {
-            return; // Skip testnet blocks or invalid blocks
+          try {
+            const txs: string[] = (
+              await axios.get(`https://mempool.space/${BITCOIN_TESTNET_REQUEST}api/block/${block.id}/txids`)
+            )?.data;
+            if (!block || USE_BITCOIN_TESTNET ? false : block.bits === 0x1d00ffff) {
+              return; // Skip testnet blocks or invalid blocks
+            }
+            if (now - block.timestamp >= 60 * 60) {
+              return; // Bounty: block too old
+            }
+            const txsHit = txs.filter((txid) => isHit(utxo.txid, txid));
+            // console.log("txs", txs.length);
+            blocksData[encodeBitcoinBlockKeys(block.height, block.id)] = {
+              ...block,
+              txs: txsHit,
+            };
+          } catch (error) {
+            console.log('#block error', error)
           }
-          if (now - block.timestamp >= 60 * 60) {
-            return; // Bounty: block too old
-          }
-          const txsHit = txs.filter((txid) => isHit(utxo.txid, txid));
-          // console.log("txs", txs.length);
-          blocksData[encodeBitcoinBlockKeys(block.height, block.id)] = {
-            ...block,
-            txs: txsHit,
-          };
         })
       );
       // console.log(blocksData);
-      // console.log("#blocksData", blocksData);
+      console.log("#blocksData", blocksData, blocks);
       for (let i = 0; i < 10; i++) {
         const blockKey = Object.keys(blocksData)[i];
         const block = blocksData[blockKey];
         try {
           // console.log("#block", block);
-          if (!block || block.bits === 0x1d00ffff) {
+          if (!block || USE_BITCOIN_TESTNET ? false : block.bits === 0x1d00ffff) {
             continue; // Skip testnet blocks or invalid blocks
           }
           if (now - block.timestamp >= 60 * 60) {
