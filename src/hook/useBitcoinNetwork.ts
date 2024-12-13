@@ -80,7 +80,7 @@ export const useBitcoinNetwork = ({
 
   const searchForBountyInput = async ({utxos, maxBountyOverride}:{utxos: IWeb3AccountUTXO[], maxBountyOverride: number}) => {
     const now = Math.floor(Date.now() / 1000);
-    const maxBounty = maxBountyOverride || 8; // Max recipients
+    const maxBounty = maxBountyOverride; // Max recipients
 
     for (const utxo of utxos) {
       utxo.recipients = [];
@@ -97,20 +97,20 @@ export const useBitcoinNetwork = ({
       const blocksData: IBitcoinBlockDetails = {};
       await Promise.all(
         blocks.map(async (block) => {
+            if(maxBounty === 0) return;
             const txs: string[] = (
               await axios.get(
                 `https://mempool.space/${BITCOIN_TESTNET_REQUEST}api/block/${block.id}/txids`
               )
             )?.data;
             if (
-              !block || USE_BITCOIN_TESTNET ? false : block.bits === 0x1d00ffff
+              !block || USE_BITCOIN_TESTNET ? false : block.bits === 0x1d00ffff 
             ) {
               return; // Skip testnet blocks or invalid blocks
             }
             if (now - block.timestamp >= 60 * 60) {
               return; // Bounty: block too old
             }
-            if(maxBounty === 0) return;
             const txsHit = txs.filter((txid) => isHit(utxo.txid, txid));
             // console.log("txs", txs.length);
             blocksData[encodeBitcoinBlockKeys(block.height, block.id)] = {
@@ -126,15 +126,13 @@ export const useBitcoinNetwork = ({
         const block = blocksData[blockKey];
         try {
           // console.log("#block", block);
-          if (!block || USE_BITCOIN_TESTNET ? false : block.bits === 0x1d00ffff) {
+          if (!block || USE_BITCOIN_TESTNET ? false : block.bits === 0x1d00ffff || maxBounty === 0) {
             continue; // Skip testnet blocks or invalid blocks
           }
-          if(maxBounty === 0) 
-            continue;
-          if (now - block.timestamp >= 60 * 60) {
+          if (now - block?.timestamp >= 60 * 60) {
             break; // Bounty: block too old
           }
-          for (const tx of block.txs) {
+          for (const tx of block?.txs || []) {
             const txDetail = (await axios.get(`https://mempool.space/${BITCOIN_TESTNET_REQUEST}api/tx/${tx}`)).data
             if (!isHit(utxo.txid, tx)) {
               continue;

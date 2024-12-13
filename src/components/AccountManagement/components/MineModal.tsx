@@ -56,7 +56,7 @@ export const MineModal = () => {
   };
 
   const handleEstimate = async () => {
-    if (!maxBounty || isNaN(Number(maxBounty)) || Number(maxBounty) < 1) {
+    if (!maxBounty || isNaN(Number(maxBounty)) || Number(maxBounty) < 0) {
       setMaxBountyError("Max Bounty must be a positive integer.");
       return;
     }
