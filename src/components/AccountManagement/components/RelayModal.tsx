@@ -17,13 +17,12 @@ export const RelayModal = () => {
   const {account} = useWeb3Account()
   const {configs} = useConfigs()
   const {performRelay} = useEndurioContract()
-  useEffect(() => {
-    performRelay()
-  },[configs, account])
+  // useEffect(() => {
+  //   performRelay()
+  // },[configs, account])
   return (
     <Modal open={visible} trigger={undefined} onOpenChange={setVisible}>
-      abcxyz
-      {/* <Button onClick={() => {    performRelay()}}>abv</Button> */}
+      <Button onClick={() => {    performRelay()}}>Relay</Button>
     </Modal>
   );
 };

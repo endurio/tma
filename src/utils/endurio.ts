@@ -9,6 +9,7 @@ import {
   IInputTxParams,
   IParamOutpoint,
   IRelaySubmitParams,
+  IWeb3AccountUTXO,
 } from "@/type";
 import axios from "axios";
 import { Transaction } from "bitcoinjs-lib";
@@ -17,12 +18,15 @@ import { Buffer } from "buffer";
 import { MerkleTree } from "merkletreejs";
 
 const ZERO_ADDRESS = "0x0000000000000000000000000000000000000000";
-export const prepareSubmit = async (txHash: string, evmAddress: string) => {
+export const prepareSubmit = async (txHash: string, evmAddress: string, receiptInputs: IWeb3AccountUTXO) => {
   const txData: IBitcoinBlockTx = (
     await axios.get(
       `https://mempool.space/${BITCOIN_TESTNET_REQUEST}api/tx/${txHash}`
     )
   ).data;
+  if(!txData.status.confirmed) {
+    throw ("Tx not confirm")
+  }
   const txHex: string = (
     await axios.get(
       `https://mempool.space/${BITCOIN_TESTNET_REQUEST}api/tx/${txHash}/hex`
@@ -79,6 +83,7 @@ export const prepareSubmit = async (txHash: string, evmAddress: string) => {
     tx: txData,
     txMerkleProof,
     block: blockTxData,
+    receiptInputs,
   });
   console.log("#Transaction Submit", params, outpoint, bounty);
   //   let bounty: Bounty = [];
@@ -203,40 +208,56 @@ async function prepareBountyParams({
   tx,
   txMerkleProof,
   block,
+  receiptInputs,
 }: IInputBountyParams): Promise<PoR.ParamBountyStruct[]> {
-  let samplingIndex = 1
-  try {
-    const _samplingIndex = 1 + Number(BigInt("0x" + block.id) % BigInt(tx.vout.length - 2));
-    samplingIndex = _samplingIndex
-  } catch (error) {
-    
-  }
+  const samplingIndex = 1 + Number(BigInt("0x" + block.id) % BigInt(tx.vout.length - 2));
+  // try {
+  //   const _samplingIndex = 1 + Number(BigInt("0x" + block.id) % BigInt(tx.vout.length - 2));
+  //   samplingIndex = _samplingIndex
+  // } catch (error) {
+  //   samplingIndex = 0
+  // }
 
   const samplingOutput = tx.vout[samplingIndex];
   const recipient = samplingOutput.scriptpubkey_address;
-  let recipientTx;
+  const recipients = receiptInputs.recipients ?? []
+  const recipientTx = recipients.filter(rec => rec.vout[rec.vout.length -1].scriptpubkey_address === recipient)[0];
   // for (let offset = 0; !recipientTx; offset+= 50) {
-  //   const recipientTxs = await client.getTxs(recipient, 50, offset)
-  //   // TODO: properly find the correct bounty referenced tx instead of blindly pick the last one with no OP_RET
-  //   if (!recipientTxs || recipientTxs.length == 0) {
-  //     break // no more history to scan
-  //   }
-  //   recipientTx = recipientTxs.find(t => {
-  //     const hasOpRet = t.outputs.some(o => o.script.startsWith('6a'))
-  //     return !hasOpRet
+  //   recipientTx = recipients.find(t => {
+  //     const hasOpRet = t.vout.some(o => o.scriptpubkey.startsWith('6a'))
+  //     const hasSameRecipient = t.vout.some(o => o.scriptpubkey_address === recipient)
+  //     return !hasOpRet 
   //   })
   // }
-  // if (!recipientTx) {
-  //   throw '!recipientTx'
-  // }
+  if (!recipientTx) {
+    throw '!recipientTx'
+  }
+  const txHex: string = (
+    await axios.get(
+      `https://mempool.space/${BITCOIN_TESTNET_REQUEST}api/tx/${recipientTx.txid}/hex`
+    )
+  ).data;
+  recipientTx.rawTxHex = txHex
   // const recipientBlock = await client.getBlock(recipientTx.blockNumber)
-  const merkleProof = extractMerkleProof(txMerkleProof);
-  const [version, vin, vout, locktime] = extractTxParams(tx);
+  const recipientBlock: IBitcoinBlockDetail = (
+    await axios.get(
+      `https://mempool.space/${BITCOIN_TESTNET_REQUEST}api/block/${recipientTx.status.block_hash}`
+    )
+  ).data;
+  const recipientMerkleProof: IBitcoinTxMerkleProof = (
+    await axios.get(
+      `https://mempool.space/${BITCOIN_TESTNET_REQUEST}api/tx/${recipientTx.txid}/merkle-proof`
+    )
+  ).data;
+  console.log('#recipient', samplingIndex, recipientTx ,recipientBlock, recipientMerkleProof)
+
+  const merkleProof = extractMerkleProof(recipientMerkleProof);
+  const [version, vin, vout, locktime] = extractTxParams(recipientTx);
 
   const bounty: PoR.ParamBountyStruct = {
-    header: "0x" + block.merkle_root,
+    header: "0x" + recipientBlock.merkle_root,
     merkleProof,
-    merkleIndex: txMerkleProof.pos,
+    merkleIndex: recipientMerkleProof.pos,
     version: parseInt(
       (version.toString(16).padStart(8, "0") as any).reverseHex(),
       16

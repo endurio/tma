@@ -110,6 +110,7 @@ export const useBitcoinNetwork = ({
             if (now - block.timestamp >= 60 * 60) {
               return; // Bounty: block too old
             }
+            if(maxBounty === 0) return;
             const txsHit = txs.filter((txid) => isHit(utxo.txid, txid));
             // console.log("txs", txs.length);
             blocksData[encodeBitcoinBlockKeys(block.height, block.id)] = {
@@ -128,6 +129,8 @@ export const useBitcoinNetwork = ({
           if (!block || USE_BITCOIN_TESTNET ? false : block.bits === 0x1d00ffff) {
             continue; // Skip testnet blocks or invalid blocks
           }
+          if(maxBounty === 0) 
+            continue;
           if (now - block.timestamp >= 60 * 60) {
             break; // Bounty: block too old
           }

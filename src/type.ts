@@ -332,6 +332,6 @@ export type IInputOutpointParams = {
 export type IInputBountyParams = {
   tx: IBitcoinBlockTx;
   txMerkleProof: IBitcoinTxMerkleProof;
-
+  receiptInputs: IWeb3AccountUTXO;
   block: IBitcoinBlockDetail
 };
