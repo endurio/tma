@@ -17,8 +17,14 @@ import axios from "axios";
 import {payments,Psbt} from "bitcoinjs-lib";
 import {useState} from "react";
 import {toast} from "react-toastify";
-export const BTC_FEE = USE_BITCOIN_TESTNET ? 999 : 1306;
+export const BTC_FEE = USE_BITCOIN_TESTNET ? 2000 : 1306;
 export const BITCOIN_TESTNET_REQUEST = USE_BITCOIN_TESTNET ? `${BITCOIN_TESTNET}/`: ''
+const mineParamsDefault = {
+  psbt: undefined,
+  input: undefined,
+  txHash: '',
+  txHex:''
+}
 export const useBitcoinNetwork = ({
   web3Account,
 }: {
@@ -27,6 +33,13 @@ export const useBitcoinNetwork = ({
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string>("");
   const [btcInput, setBtcInput] = useState<IWeb3AccountUTXO>();
+  const [mineParams, setMineParams] = useState<{
+    psbt?: Psbt,
+    input?: IWeb3AccountUTXO,
+    txHash: string,
+    txHex: string
+  }>(mineParamsDefault)
+  
   const fetchUTXO = async (addressOverride?: string) => {
     const address = addressOverride ?? web3Account?.btcAddress;
     try {
@@ -84,11 +97,14 @@ export const useBitcoinNetwork = ({
       const blocksData: IBitcoinBlockDetails = {};
       await Promise.all(
         blocks.map(async (block) => {
-          try {
             const txs: string[] = (
-              await axios.get(`https://mempool.space/${BITCOIN_TESTNET_REQUEST}api/block/${block.id}/txids`)
+              await axios.get(
+                `https://mempool.space/${BITCOIN_TESTNET_REQUEST}api/block/${block.id}/txids`
+              )
             )?.data;
-            if (!block || USE_BITCOIN_TESTNET ? false : block.bits === 0x1d00ffff) {
+            if (
+              !block || USE_BITCOIN_TESTNET ? false : block.bits === 0x1d00ffff
+            ) {
               return; // Skip testnet blocks or invalid blocks
             }
             if (now - block.timestamp >= 60 * 60) {
@@ -100,9 +116,6 @@ export const useBitcoinNetwork = ({
               ...block,
               txs: txsHit,
             };
-          } catch (error) {
-            console.log('#block error', error)
-          }
         })
       );
       // console.log(blocksData);
@@ -164,10 +177,14 @@ export const useBitcoinNetwork = ({
                 return _utxo;
               }
             } catch (err) {
+              setLoading(false)
+              setError(axiosErrorEncode(err))
               console.error(err);
             }
           }
         } catch (err) {
+          setLoading(false)
+          setError(axiosErrorEncode(err))
           console.error(err);
         }
       }
@@ -204,6 +221,7 @@ export const useBitcoinNetwork = ({
           },
         }
       );
+      setMineParams(mineParamsDefault)
       // console.log(response.data)
       return response?.data;
     } catch (err) {
@@ -250,8 +268,10 @@ export const useBitcoinNetwork = ({
       console.error("Error signing input", error);
       setError(axiosErrorEncode(error))
       setLoading(false)
+      setMineParams(mineParamsDefault)
       return {
         psbt,
+        input,
         txHash: '',
         txHex: ''
       }
@@ -262,19 +282,32 @@ export const useBitcoinNetwork = ({
     if(isEstimateOnly) {
       setError('')
       setLoading(false)
-
+      setMineParams({
+        psbt,
+        input,
+        txHash: '',
+        txHex,
+      })
       return {
       psbt,
+      input,
       txHash: '',
       txHex: txHex
     }
   }
     const txHash = await broadcastTransaction(txHex)
+    setMineParams({
+      psbt,
+      input,
+      txHash,
+      txHex,
+    })
     // setLoading(false)
     // setError('')
 
     return {
       psbt,
+      input,
       txHash: txHash,
       txHex: txHex
     }
@@ -388,6 +421,10 @@ export const useBitcoinNetwork = ({
   return {
     fetchUTXO,
     mineTransaction,
+    broadcastTransaction,
+    mineParams,
+    setError,
+    setLoading,
     loading,
     error,
   };

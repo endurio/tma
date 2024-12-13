@@ -1,6 +1,6 @@
 import {useBitcoinNetwork} from "@/hook/useBitcoinNetwork";
 import {useAppContext} from "@/pages/IndexPage/IndexPage";
-import {IWeb3Account} from "@/type";
+import {IWeb3Account, IWeb3AccountUTXO} from "@/type";
 import {WHITELIST_TOKEN_LIST} from "@/utils/constant";
 import {loadWeb3AccountData} from "@/utils/tools";
 import {decodeAccountKeys,encodeAccountKeys,generateBitcoinWalletFromEVMPrivateKey,generateEVMWallet,generateEVMWalletFromPrivateKey,isBtcAddress,isEvmAddress} from "@/utils/utils";
@@ -20,6 +20,7 @@ export const useWeb3Account = () => {
       btcNonSegwitAddress: btcWallet.btcNonSegwitAddress,
       evmSigner: evmWallet.wallet,
       btcSigner: btcWallet.btcKeyPair,
+      mineTxs: {},
       balances: {},
       allowances: {},
       btcUTXOs: []
@@ -36,6 +37,7 @@ export const useWeb3Account = () => {
       btcNonSegwitAddress: btcWallet.btcNonSegwitAddress,
       evmSigner: evmWallet.wallet,
       btcSigner: btcWallet.btcKeyPair,
+      mineTxs: {},
       balances: {},
       allowances: {},
       btcUTXOs: []
@@ -49,6 +51,14 @@ export const useWeb3Account = () => {
     setIsFetchingWeb3Account(true)
     const web3State = await loadWeb3AccountData([evmAddress], WHITELIST_TOKEN_LIST,[])
     const balance = await fetchUTXO(btcAddress)
+    const mineTxInputs: {[key:string]: IWeb3AccountUTXO} = {}
+    for(let i = 0; i < localStorage.length; i++){
+      const mineTxKey = localStorage.key(i)
+      if(mineTxKey?.split('-')[0] === 'minetx')  {
+        mineTxInputs[mineTxKey.split('-')[1]] = JSON.parse(localStorage.getItem(mineTxKey) ?? '{}')
+      }
+    }
+    _webAccount.mineTxs = mineTxInputs
     _webAccount.balances = web3State[evmAddress].balances
     _webAccount.allowances = web3State[evmAddress].allowances
     _webAccount.btcDisplayBalance = Number(balance.displayBalance)

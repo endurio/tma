@@ -8,7 +8,7 @@ import {useWeb3Account} from "../hook/useWeb3Account";
 let _modal: (props: { visible: boolean }) => void;
 
 export const RelayModal = () => {
-  const [visible, setVisible] = useState(true);
+  const [visible, setVisible] = useState(false);
   useEffect(() => {
     _modal = ({ visible }: { visible: boolean }) => {
       setVisible(visible);

@@ -18,6 +18,7 @@ import {useEffect,useMemo,useState} from "react";
 import {useWeb3Account} from "../hook/useWeb3Account";
 import "./index.css";
 import {toast} from "react-toastify";
+import {setCloudStorageItem} from "@telegram-apps/sdk";
 
 let _modal: (props: { visible: boolean }) => void;
 
@@ -33,8 +34,10 @@ export const MineModal = () => {
   const { account,fetchWeb3AccountState } = useWeb3Account();
   const {
     mineTransaction,
+    broadcastTransaction,
     loading: mineLoading,
     error: mineError,
+    mineParams,
   } = useBitcoinNetwork({ web3Account: account });
 
   useEffect(() => {
@@ -69,19 +72,16 @@ export const MineModal = () => {
   };
 
   const handleMine = async () => {
+    if(!mineParams.txHex && mineError === '' && mineLoading === false) return;
     setConfirmVisible(false);
-    const result = await mineTransaction({
-      maxBounty: Number(maxBounty),
-      opReturn,
-      isEstimateOnly: false,
-    });
-    if (result?.txHash) {
+    const txHash = await broadcastTransaction(mineParams.txHex);
+    if (txHash) {
       setVisible(false)
       toast(
         <div>
           Transaction submitted successfully. View details on the {' '}
           <a 
-            href={`https://mempool.space/${BITCOIN_TESTNET_REQUEST}tx/${result.txHash}`} 
+            href={`https://mempool.space/${BITCOIN_TESTNET_REQUEST}tx/${txHash}`} 
             target="_blank" 
             rel="noopener noreferrer" 
             style={{ color: "#f0ad4e", textDecoration: "underline" }}
@@ -90,6 +90,7 @@ export const MineModal = () => {
           </a>.
         </div>
       ,{type: 'success'});
+      localStorage.setItem(`minetx-${txHash}`, JSON.stringify(mineParams.input))
       await fetchWeb3AccountState()
     }
     
@@ -105,13 +106,13 @@ export const MineModal = () => {
       0
     ) - Number(bitcoinTxPsbt.txOutputs[bitcoinTxPsbt.txOutputs.length -1].value);
   }, [bitcoinTxPsbt]);
-  useEffect(() => {
-    mineTransaction({
-      maxBounty: Number(maxBounty),
-      opReturn,
-      isEstimateOnly: true,
-    });
-  },[maxBounty, opReturn, account?.btcUTXOs])
+  // useEffect(() => {
+  //   mineTransaction({
+  //     maxBounty: Number(maxBounty),
+  //     opReturn,
+  //     isEstimateOnly: true,
+  //   });
+  // },[maxBounty, opReturn, account?.btcUTXOs])
   return (
     <>
       <Modal open={visible} onOpenChange={setVisible}>

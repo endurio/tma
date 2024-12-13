@@ -14,6 +14,7 @@ export interface IWeb3Account {
     btcBalance?: number;
     btcDisplayBalance?: number;
     btcUTXOs: IWeb3AccountUTXO[];
+    mineTxs: {[hash:string]: IWeb3AccountUTXO};
     allowances: IWeb3AccountAllowances;
 }
 
