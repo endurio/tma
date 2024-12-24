@@ -38,12 +38,12 @@ export const RelayModal = () => {
   }, []);
   const { account } = useWeb3Account();
   const { configs } = useConfigs();
-  const { performRelay , performMultiRelay, relayState} = useEndurioContract();
+  const { performRelay, performMultiRelay, relayState } = useEndurioContract();
   const { tokenPrices } = useTokensPrice();
 
   useEffect(() => {
-    console.log(relayState)
-  },[relayState])
+    console.log(relayState);
+  }, [relayState]);
   const displayMineTxNeedToRelays = useMemo(() => {
     const _displayRelayTxs: IWeb3AccountUTXO[] = [];
     Object.keys(account?.mineTxs || {}).map((key) => {
@@ -54,24 +54,28 @@ export const RelayModal = () => {
     return _displayRelayTxs;
   }, [account]);
   const allRelaysState = useMemo(() => {
-    let loading = false
-    let error = false
+    let loading = false;
+    let error = false;
 
-    Object.keys(relayState).map(keyS => {
-      if(relayState[keyS].loading === true && loading === false) {
-        loading = true
+    Object.keys(relayState).map((keyS) => {
+      if (relayState[keyS].loading === true && loading === false) {
+        loading = true;
       }
-    })
-    Object.keys(relayState).map(keyS => {
-      if(relayState[keyS].error !== '' && error === false) {
-        error = true
+    });
+    Object.keys(relayState).map((keyS) => {
+      if (relayState[keyS].error !== "" && error === false) {
+        error = true;
       }
-    })
+    });
     return {
       relaysError: error,
-      relaysLoading: loading
-    }
-  },[relayState])
+      relaysLoading: loading,
+    };
+  }, [relayState]);
+  // useEffect(() => {
+  //   if(Object.keys(account?.mineTxs || {}).length > 0)
+
+  // },[account])
   return (
     <Modal open={visible} trigger={undefined} onOpenChange={setVisible}>
       {/* <Button onClick={() => {    performRelay()}}>Relay</Button> */}
@@ -100,8 +104,16 @@ export const RelayModal = () => {
                 />
               }
               subtitle={`${shortenAddress(mineTx.txid, 12, 12)}`}
-              description={relayState[mineTx?.txid]?.error || ''}
-              after={relayState[mineTx?.txid]?.loading ? <Spinner size={'s'}/> :''}
+              description={
+                relayState[mineTx?.txid]?.loading === false
+                  ? relayState[mineTx?.txid]?.error === ""
+                    ? "Can relay"
+                    : relayState[mineTx?.txid]?.error
+                  : ""
+              }
+              after={
+                relayState[mineTx?.txid]?.loading ? <Spinner size={"s"} /> : ""
+              }
             />
           ))}
           <Divider />
@@ -117,18 +129,36 @@ export const RelayModal = () => {
               Number(weibtc(BTC_FEE))
             )} BTC ($${zerofy(Number(weibtc(BTC_FEE)) * tokenPrices.BTC)})`}
           />
+          {/* <Button></Button> */}
           <Button
             className="w-100"
             loading={allRelaysState.relaysLoading}
             onClick={async () => {
               try {
-                await performMultiRelay( displayMineTxNeedToRelays.map((t) => {return {txHash: t.txid, callStatic: true}}));
+                const res = await performMultiRelay(
+                  displayMineTxNeedToRelays.map((t) => {
+                    return { txHash: t.txid, callStatic: true };
+                  })
+                );
+                const txHashCanRelay = res
+                  .filter((r) => r.error !== "")
+                  .map((r) => r.txHash);
+                const sentRelaysParams = txHashCanRelay
+                  .map((t) => {
+                    return { txHash: t, callStatic: false };
+                  })
+                  .filter((t) => t) as any[];
+                console.log("#txHashCanRelay", txHashCanRelay);
+                if (sentRelaysParams.length === 0) return;
+                await performMultiRelay(sentRelaysParams);
               } catch (error) {
                 toast.error(axiosErrorEncode(error));
               }
             }}
           >
-            {allRelaysState?.relaysLoading ? 'Loading...' : `Relay all (${displayMineTxNeedToRelays.length})`}
+            {allRelaysState?.relaysLoading
+              ? "Loading..."
+              : `Relay all (${displayMineTxNeedToRelays.length})`}
           </Button>
         </List>
       </Section>

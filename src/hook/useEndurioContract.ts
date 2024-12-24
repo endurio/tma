@@ -50,8 +50,8 @@ export const useEndurioContract = () => {
 
       account.mineTxs[txHash].isRelayed = true;
       await setCloudStorageItem(`minetx-${txHash}`, JSON.stringify(account.mineTxs[txHash]));
-
       updateState(txHash, { relayTx: txHashReq.transactionHash, loading: false });
+      
     } catch (error) {
       const encodedError = axiosErrorEncode(error);
       updateState(txHash, { error: encodedError, loading: false });
@@ -64,9 +64,10 @@ export const useEndurioContract = () => {
       throw new Error("Invalid input: transactions must be an array.");
     }
 
-    let results = [];
+    let results: any[] = [];
 
-    for (const tx of transactions) {
+    // for (const tx of transactions) {
+    await Promise.all(transactions.map(async tx => {
       const { txHash, callStatic } = tx;
       try {
         const result = await performRelay({ txHash, callStatic: callStatic });
@@ -75,7 +76,9 @@ export const useEndurioContract = () => {
         console.error(`Error relaying tx ${txHash}:`, error);
         results.push({ txHash, status: "error", error });
       }
-    }
+    }))
+    
+    // }
 
     return results;
   };
