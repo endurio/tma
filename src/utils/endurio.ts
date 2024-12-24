@@ -132,14 +132,16 @@ function prepareSubmitParams({
     header: "0x" + (extractHeader(block) || block.merkle_root),
     merkleIndex: txMerkleProof.pos,
     merkleProof,
-    version: parseInt(
-      (version.toString(16).padStart(8, "0") as any).reverseHex(),
-      16
-    ),
-    locktime: parseInt(
-      (locktime.toString(16).padStart(8, "0") as any).reverseHex(),
-      16
-    ),
+    version,
+    // : parseInt(
+    //   (version.toString(16).padStart(8, "0") as any).reverseHex(),
+    //   16
+    // ),
+    locktime,
+    // : parseInt(
+    //   (locktime.toString(16).padStart(8, "0") as any).reverseHex(),
+    //   16
+    // ),
     vin: String(vin),
     vout: String(vout),
     memoLength,
@@ -226,14 +228,16 @@ async function prepareOutpointParams({
   const [version, vin, vout, locktime] = extractTxParams(dx);
   return [
     {
-      version: parseInt(
-        (version.toString(16).padStart(8, "0") as any).reverseHex(),
-        16
-      ),
-      locktime: parseInt(
-        (locktime.toString(16).padStart(8, "0") as any).reverseHex(),
-        16
-      ),
+      version,
+      // parseInt(
+      //   (version.toString(16).padStart(8, "0") as any).reverseHex(),
+      //   16
+      // ),
+      locktime,
+      // parseInt(
+      //   (locktime.toString(16).padStart(8, "0") as any).reverseHex(),
+      //   16
+      // ),
       vin: String(vin),
       vout: String(vout),
       pkhPos,
@@ -299,14 +303,16 @@ async function prepareBountyParams({
     header: "0x" + blockTxHeader,
     merkleProof,
     merkleIndex: recipientMerkleProof.pos,
-    version: parseInt(
-      (version.toString(16).padStart(8, "0") as any).reverseHex(),
-      16
-    ),
-    locktime: parseInt(
-      (locktime.toString(16).padStart(8, "0") as any).reverseHex(),
-      16
-    ),
+    version,
+    // : parseInt(
+    //   (version.toString(16).padStart(8, "0") as any).reverseHex(),
+    //   16
+    // ),
+    locktime,
+    // : parseInt(
+    //   (locktime.toString(16).padStart(8, "0") as any).reverseHex(),
+    //   16
+    // ),
     vin: String(vin),
     vout: String(vout),
     // inputs: [],
@@ -478,7 +484,10 @@ function extractTxParams(tx: IBitcoinBlockTx) {
 
   const vin = '0x'+hex.substring(vinStart, voutStart);
   const vout = '0x'+hex.substring(voutStart, hex.length - 8); // the last 8 bytes is lock time
-  return [tx.version, vin, vout, tx.locktime];
+  const version = '0x' + (tx.version.toString(16).padStart(8,'0') as any).reverseHex()
+  const locktime = '0x' + (tx.locktime.toString(16).padStart(8,'0') as any).reverseHex()
+  
+  return [version, vin, vout, locktime];
 
   function stripTxWitness(tt: Transaction) {
     if (tt.hasWitnesses()) {

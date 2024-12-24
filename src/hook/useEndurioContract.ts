@@ -4,7 +4,7 @@ import { useWeb3Account } from "@/components/AccountManagement/hook/useWeb3Accou
 import { JSONProvider } from "@/config";
 import { IBitcoinBlockTx, IRelaySubmitParams, IWeb3AccountUTXO } from "@/type";
 import { prepareSubmit } from "@/utils/endurio";
-import { Contract, Wallet } from "ethers";
+import { BigNumber, Contract, Wallet } from "ethers";
 import { useState } from "react";
 import { useConfigs } from "./useConfigs";
 import { axiosErrorEncode, copyToClipboard } from "@/utils/utils";
@@ -31,7 +31,7 @@ export const useEndurioContract = () => {
       ) as PoR;
       const IRelaySubmitParams: IRelaySubmitParams | [] = [];
       const txHash =
-        "ce165371eb112918cbd6fe0b7009765ce0d903291858964605a742d54dc3ed49";
+        "683fdcded3548dfbb1be70aa34d45a53d6faa1a30383068b4c191346f79101f4";
       const txBounty = [
         "ce80284fd89cb1478e7fd37453b88171c08b9af86e1bbab843012107c45517fd",
         "a5af5e5f64a3df08d32b6be380f0cd70194fd943033f6e723068536d3f2f4d46",
@@ -76,8 +76,6 @@ export const useEndurioContract = () => {
       );
       if (!params) throw "Submit params invalid";
       const BOUNTY_TIME = await relayContract.BOUNTY_RATE();
-      // console.log("#relay", relayContract);
-      // console.log("#relay bounty", BOUNTY_TIME);
       console.log(
         "#relay-params-output-bounty",
         { params, outpoint, bounty },
@@ -87,7 +85,7 @@ export const useEndurioContract = () => {
       const res = await relayContract.callStatic.endurioRelay(
         params,
         outpoint,
-        bounty
+        bounty,
       );
       console.log("#relay", res);
       setLoading(false);

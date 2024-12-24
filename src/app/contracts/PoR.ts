@@ -32,12 +32,14 @@ export declare namespace PoR {
     memoHash: BytesLike;
     slot: BigNumberish;
     payer: string;
+    recipient: string;
   };
 
-  export type ParamClaimStructOutput = [string, BigNumber, string] & {
+  export type ParamClaimStructOutput = [string, BigNumber, string, string] & {
     memoHash: string;
     slot: BigNumber;
     payer: string;
+    recipient: string;
   };
 
   export type ParamSubmitStruct = {
@@ -45,8 +47,8 @@ export declare namespace PoR {
     header: BytesLike;
     merkleIndex: BigNumberish;
     merkleProof: BytesLike;
-    version: BigNumberish;
-    locktime: BigNumberish;
+    version: BytesLike;
+    locktime: BytesLike;
     vin: BytesLike;
     vout: BytesLike;
     inputIndex: BigNumberish;
@@ -59,8 +61,8 @@ export declare namespace PoR {
     string,
     number,
     string,
-    number,
-    number,
+    string,
+    string,
     string,
     string,
     number,
@@ -71,8 +73,8 @@ export declare namespace PoR {
     header: string;
     merkleIndex: number;
     merkleProof: string;
-    version: number;
-    locktime: number;
+    version: string;
+    locktime: string;
     vin: string;
     vout: string;
     inputIndex: number;
@@ -81,22 +83,22 @@ export declare namespace PoR {
   };
 
   export type ParamOutpointStruct = {
-    version: BigNumberish;
-    locktime: BigNumberish;
+    version: BytesLike;
+    locktime: BytesLike;
     vin: BytesLike;
     vout: BytesLike;
     pkhPos: BigNumberish;
   };
 
   export type ParamOutpointStructOutput = [
-    number,
-    number,
+    string,
+    string,
     string,
     string,
     number
   ] & {
-    version: number;
-    locktime: number;
+    version: string;
+    locktime: string;
     vin: string;
     vout: string;
     pkhPos: number;
@@ -106,8 +108,8 @@ export declare namespace PoR {
     header: BytesLike;
     merkleIndex: BigNumberish;
     merkleProof: BytesLike;
-    version: BigNumberish;
-    locktime: BigNumberish;
+    version: BytesLike;
+    locktime: BytesLike;
     vin: BytesLike;
     vout: BytesLike;
   };
@@ -116,16 +118,16 @@ export declare namespace PoR {
     string,
     number,
     string,
-    number,
-    number,
+    string,
+    string,
     string,
     string
   ] & {
     header: string;
     merkleIndex: number;
     merkleProof: string;
-    version: number;
-    locktime: number;
+    version: string;
+    locktime: string;
     vin: string;
     vout: string;
   };
@@ -136,20 +138,27 @@ export interface PoRInterface extends utils.Interface {
     "BASE_TARGET()": FunctionFragment;
     "BOUNTY_RATE()": FunctionFragment;
     "BOUNTY_TIME()": FunctionFragment;
+    "EXP_W()": FunctionFragment;
     "MEMO_HASH()": FunctionFragment;
+    "REWARD_HALVING_SLOT()": FunctionFragment;
+    "REWARD_HALVING_SLOT_START()": FunctionFragment;
     "REWARD_START()": FunctionFragment;
     "SLOT()": FunctionFragment;
+    "SLOT_REWARD_MAX()": FunctionFragment;
+    "SLOT_REWARD_MIN()": FunctionFragment;
     "SUBMIT_TIME()": FunctionFragment;
+    "SUBSIDY_RATE()": FunctionFragment;
     "TOKEN()": FunctionFragment;
     "UPGRADE_INTERFACE_VERSION()": FunctionFragment;
     "VAULT()": FunctionFragment;
     "acceptOwnership()": FunctionFragment;
-    "endurioClaim((bytes32,uint256,address))": FunctionFragment;
-    "endurioRelay((bytes,bytes,uint32,bytes,uint32,uint32,bytes,bytes,uint32,uint32,uint32),(uint32,uint32,bytes,bytes,uint32)[],(bytes,uint32,bytes,uint32,uint32,bytes,bytes)[])": FunctionFragment;
+    "endurioClaim((bytes32,uint256,address,address))": FunctionFragment;
+    "endurioRelay((bytes,bytes,uint32,bytes,bytes4,bytes4,bytes,bytes,uint32,uint32,uint32),(bytes4,bytes4,bytes,bytes,uint32)[],(bytes,uint32,bytes,bytes4,bytes4,bytes,bytes)[])": FunctionFragment;
     "owner()": FunctionFragment;
     "pendingOwner()": FunctionFragment;
     "proxiableUUID()": FunctionFragment;
     "renounceOwnership()": FunctionFragment;
+    "s_xp(address)": FunctionFragment;
     "transferOwnership(address)": FunctionFragment;
     "upgradeToAndCall(address,bytes)": FunctionFragment;
   };
@@ -159,10 +168,16 @@ export interface PoRInterface extends utils.Interface {
       | "BASE_TARGET"
       | "BOUNTY_RATE"
       | "BOUNTY_TIME"
+      | "EXP_W"
       | "MEMO_HASH"
+      | "REWARD_HALVING_SLOT"
+      | "REWARD_HALVING_SLOT_START"
       | "REWARD_START"
       | "SLOT"
+      | "SLOT_REWARD_MAX"
+      | "SLOT_REWARD_MIN"
       | "SUBMIT_TIME"
+      | "SUBSIDY_RATE"
       | "TOKEN"
       | "UPGRADE_INTERFACE_VERSION"
       | "VAULT"
@@ -173,6 +188,7 @@ export interface PoRInterface extends utils.Interface {
       | "pendingOwner"
       | "proxiableUUID"
       | "renounceOwnership"
+      | "s_xp"
       | "transferOwnership"
       | "upgradeToAndCall"
   ): FunctionFragment;
@@ -189,14 +205,35 @@ export interface PoRInterface extends utils.Interface {
     functionFragment: "BOUNTY_TIME",
     values?: undefined
   ): string;
+  encodeFunctionData(functionFragment: "EXP_W", values?: undefined): string;
   encodeFunctionData(functionFragment: "MEMO_HASH", values?: undefined): string;
+  encodeFunctionData(
+    functionFragment: "REWARD_HALVING_SLOT",
+    values?: undefined
+  ): string;
+  encodeFunctionData(
+    functionFragment: "REWARD_HALVING_SLOT_START",
+    values?: undefined
+  ): string;
   encodeFunctionData(
     functionFragment: "REWARD_START",
     values?: undefined
   ): string;
   encodeFunctionData(functionFragment: "SLOT", values?: undefined): string;
   encodeFunctionData(
+    functionFragment: "SLOT_REWARD_MAX",
+    values?: undefined
+  ): string;
+  encodeFunctionData(
+    functionFragment: "SLOT_REWARD_MIN",
+    values?: undefined
+  ): string;
+  encodeFunctionData(
     functionFragment: "SUBMIT_TIME",
+    values?: undefined
+  ): string;
+  encodeFunctionData(
+    functionFragment: "SUBSIDY_RATE",
     values?: undefined
   ): string;
   encodeFunctionData(functionFragment: "TOKEN", values?: undefined): string;
@@ -234,6 +271,7 @@ export interface PoRInterface extends utils.Interface {
     functionFragment: "renounceOwnership",
     values?: undefined
   ): string;
+  encodeFunctionData(functionFragment: "s_xp", values: [string]): string;
   encodeFunctionData(
     functionFragment: "transferOwnership",
     values: [string]
@@ -255,14 +293,35 @@ export interface PoRInterface extends utils.Interface {
     functionFragment: "BOUNTY_TIME",
     data: BytesLike
   ): Result;
+  decodeFunctionResult(functionFragment: "EXP_W", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "MEMO_HASH", data: BytesLike): Result;
+  decodeFunctionResult(
+    functionFragment: "REWARD_HALVING_SLOT",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "REWARD_HALVING_SLOT_START",
+    data: BytesLike
+  ): Result;
   decodeFunctionResult(
     functionFragment: "REWARD_START",
     data: BytesLike
   ): Result;
   decodeFunctionResult(functionFragment: "SLOT", data: BytesLike): Result;
   decodeFunctionResult(
+    functionFragment: "SLOT_REWARD_MAX",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "SLOT_REWARD_MIN",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
     functionFragment: "SUBMIT_TIME",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "SUBSIDY_RATE",
     data: BytesLike
   ): Result;
   decodeFunctionResult(functionFragment: "TOKEN", data: BytesLike): Result;
@@ -296,6 +355,7 @@ export interface PoRInterface extends utils.Interface {
     functionFragment: "renounceOwnership",
     data: BytesLike
   ): Result;
+  decodeFunctionResult(functionFragment: "s_xp", data: BytesLike): Result;
   decodeFunctionResult(
     functionFragment: "transferOwnership",
     data: BytesLike
@@ -306,7 +366,7 @@ export interface PoRInterface extends utils.Interface {
   ): Result;
 
   events: {
-    "EndurioClaim(address,bytes32,bytes32,uint256,uint256)": EventFragment;
+    "EndurioClaim(address,bytes32,bytes32,uint256,uint256,address)": EventFragment;
     "EndurioRelay(address,bytes32,uint256,uint256)": EventFragment;
     "OwnershipTransferStarted(address,address)": EventFragment;
     "OwnershipTransferred(address,address)": EventFragment;
@@ -326,9 +386,10 @@ export interface EndurioClaimEventObject {
   payerHash: string;
   slot: BigNumber;
   amount: BigNumber;
+  recipient: string;
 }
 export type EndurioClaimEvent = TypedEvent<
-  [string, string, string, BigNumber, BigNumber],
+  [string, string, string, BigNumber, BigNumber, string],
   EndurioClaimEventObject
 >;
 
@@ -338,7 +399,7 @@ export interface EndurioRelayEventObject {
   miner: string;
   memoHash: string;
   slot: BigNumber;
-  rewardRate: BigNumber;
+  slotShare: BigNumber;
 }
 export type EndurioRelayEvent = TypedEvent<
   [string, string, BigNumber, BigNumber],
@@ -411,13 +472,25 @@ export interface PoR extends BaseContract {
 
     BOUNTY_TIME(overrides?: CallOverrides): Promise<[BigNumber]>;
 
+    EXP_W(overrides?: CallOverrides): Promise<[BigNumber]>;
+
     MEMO_HASH(overrides?: CallOverrides): Promise<[string]>;
+
+    REWARD_HALVING_SLOT(overrides?: CallOverrides): Promise<[BigNumber]>;
+
+    REWARD_HALVING_SLOT_START(overrides?: CallOverrides): Promise<[BigNumber]>;
 
     REWARD_START(overrides?: CallOverrides): Promise<[BigNumber]>;
 
     SLOT(overrides?: CallOverrides): Promise<[BigNumber]>;
 
+    SLOT_REWARD_MAX(overrides?: CallOverrides): Promise<[BigNumber]>;
+
+    SLOT_REWARD_MIN(overrides?: CallOverrides): Promise<[BigNumber]>;
+
     SUBMIT_TIME(overrides?: CallOverrides): Promise<[BigNumber]>;
+
+    SUBSIDY_RATE(overrides?: CallOverrides): Promise<[BigNumber]>;
 
     TOKEN(overrides?: CallOverrides): Promise<[string]>;
 
@@ -451,6 +524,8 @@ export interface PoR extends BaseContract {
       overrides?: Overrides & { from?: string }
     ): Promise<ContractTransaction>;
 
+    s_xp(arg0: string, overrides?: CallOverrides): Promise<[BigNumber]>;
+
     transferOwnership(
       newOwner: string,
       overrides?: Overrides & { from?: string }
@@ -469,13 +544,25 @@ export interface PoR extends BaseContract {
 
   BOUNTY_TIME(overrides?: CallOverrides): Promise<BigNumber>;
 
+  EXP_W(overrides?: CallOverrides): Promise<BigNumber>;
+
   MEMO_HASH(overrides?: CallOverrides): Promise<string>;
+
+  REWARD_HALVING_SLOT(overrides?: CallOverrides): Promise<BigNumber>;
+
+  REWARD_HALVING_SLOT_START(overrides?: CallOverrides): Promise<BigNumber>;
 
   REWARD_START(overrides?: CallOverrides): Promise<BigNumber>;
 
   SLOT(overrides?: CallOverrides): Promise<BigNumber>;
 
+  SLOT_REWARD_MAX(overrides?: CallOverrides): Promise<BigNumber>;
+
+  SLOT_REWARD_MIN(overrides?: CallOverrides): Promise<BigNumber>;
+
   SUBMIT_TIME(overrides?: CallOverrides): Promise<BigNumber>;
+
+  SUBSIDY_RATE(overrides?: CallOverrides): Promise<BigNumber>;
 
   TOKEN(overrides?: CallOverrides): Promise<string>;
 
@@ -509,6 +596,8 @@ export interface PoR extends BaseContract {
     overrides?: Overrides & { from?: string }
   ): Promise<ContractTransaction>;
 
+  s_xp(arg0: string, overrides?: CallOverrides): Promise<BigNumber>;
+
   transferOwnership(
     newOwner: string,
     overrides?: Overrides & { from?: string }
@@ -527,13 +616,25 @@ export interface PoR extends BaseContract {
 
     BOUNTY_TIME(overrides?: CallOverrides): Promise<BigNumber>;
 
+    EXP_W(overrides?: CallOverrides): Promise<BigNumber>;
+
     MEMO_HASH(overrides?: CallOverrides): Promise<string>;
+
+    REWARD_HALVING_SLOT(overrides?: CallOverrides): Promise<BigNumber>;
+
+    REWARD_HALVING_SLOT_START(overrides?: CallOverrides): Promise<BigNumber>;
 
     REWARD_START(overrides?: CallOverrides): Promise<BigNumber>;
 
     SLOT(overrides?: CallOverrides): Promise<BigNumber>;
 
+    SLOT_REWARD_MAX(overrides?: CallOverrides): Promise<BigNumber>;
+
+    SLOT_REWARD_MIN(overrides?: CallOverrides): Promise<BigNumber>;
+
     SUBMIT_TIME(overrides?: CallOverrides): Promise<BigNumber>;
+
+    SUBSIDY_RATE(overrides?: CallOverrides): Promise<BigNumber>;
 
     TOKEN(overrides?: CallOverrides): Promise<string>;
 
@@ -563,6 +664,8 @@ export interface PoR extends BaseContract {
 
     renounceOwnership(overrides?: CallOverrides): Promise<void>;
 
+    s_xp(arg0: string, overrides?: CallOverrides): Promise<BigNumber>;
+
     transferOwnership(
       newOwner: string,
       overrides?: CallOverrides
@@ -576,32 +679,34 @@ export interface PoR extends BaseContract {
   };
 
   filters: {
-    "EndurioClaim(address,bytes32,bytes32,uint256,uint256)"(
+    "EndurioClaim(address,bytes32,bytes32,uint256,uint256,address)"(
       miner?: string | null,
       memoHash?: BytesLike | null,
       payerHash?: BytesLike | null,
       slot?: null,
-      amount?: null
+      amount?: null,
+      recipient?: null
     ): EndurioClaimEventFilter;
     EndurioClaim(
       miner?: string | null,
       memoHash?: BytesLike | null,
       payerHash?: BytesLike | null,
       slot?: null,
-      amount?: null
+      amount?: null,
+      recipient?: null
     ): EndurioClaimEventFilter;
 
     "EndurioRelay(address,bytes32,uint256,uint256)"(
       miner?: string | null,
       memoHash?: BytesLike | null,
       slot?: null,
-      rewardRate?: null
+      slotShare?: null
     ): EndurioRelayEventFilter;
     EndurioRelay(
       miner?: string | null,
       memoHash?: BytesLike | null,
       slot?: null,
-      rewardRate?: null
+      slotShare?: null
     ): EndurioRelayEventFilter;
 
     "OwnershipTransferStarted(address,address)"(
@@ -633,13 +738,25 @@ export interface PoR extends BaseContract {
 
     BOUNTY_TIME(overrides?: CallOverrides): Promise<BigNumber>;
 
+    EXP_W(overrides?: CallOverrides): Promise<BigNumber>;
+
     MEMO_HASH(overrides?: CallOverrides): Promise<BigNumber>;
+
+    REWARD_HALVING_SLOT(overrides?: CallOverrides): Promise<BigNumber>;
+
+    REWARD_HALVING_SLOT_START(overrides?: CallOverrides): Promise<BigNumber>;
 
     REWARD_START(overrides?: CallOverrides): Promise<BigNumber>;
 
     SLOT(overrides?: CallOverrides): Promise<BigNumber>;
 
+    SLOT_REWARD_MAX(overrides?: CallOverrides): Promise<BigNumber>;
+
+    SLOT_REWARD_MIN(overrides?: CallOverrides): Promise<BigNumber>;
+
     SUBMIT_TIME(overrides?: CallOverrides): Promise<BigNumber>;
+
+    SUBSIDY_RATE(overrides?: CallOverrides): Promise<BigNumber>;
 
     TOKEN(overrides?: CallOverrides): Promise<BigNumber>;
 
@@ -673,6 +790,8 @@ export interface PoR extends BaseContract {
       overrides?: Overrides & { from?: string }
     ): Promise<BigNumber>;
 
+    s_xp(arg0: string, overrides?: CallOverrides): Promise<BigNumber>;
+
     transferOwnership(
       newOwner: string,
       overrides?: Overrides & { from?: string }
@@ -692,13 +811,29 @@ export interface PoR extends BaseContract {
 
     BOUNTY_TIME(overrides?: CallOverrides): Promise<PopulatedTransaction>;
 
+    EXP_W(overrides?: CallOverrides): Promise<PopulatedTransaction>;
+
     MEMO_HASH(overrides?: CallOverrides): Promise<PopulatedTransaction>;
+
+    REWARD_HALVING_SLOT(
+      overrides?: CallOverrides
+    ): Promise<PopulatedTransaction>;
+
+    REWARD_HALVING_SLOT_START(
+      overrides?: CallOverrides
+    ): Promise<PopulatedTransaction>;
 
     REWARD_START(overrides?: CallOverrides): Promise<PopulatedTransaction>;
 
     SLOT(overrides?: CallOverrides): Promise<PopulatedTransaction>;
 
+    SLOT_REWARD_MAX(overrides?: CallOverrides): Promise<PopulatedTransaction>;
+
+    SLOT_REWARD_MIN(overrides?: CallOverrides): Promise<PopulatedTransaction>;
+
     SUBMIT_TIME(overrides?: CallOverrides): Promise<PopulatedTransaction>;
+
+    SUBSIDY_RATE(overrides?: CallOverrides): Promise<PopulatedTransaction>;
 
     TOKEN(overrides?: CallOverrides): Promise<PopulatedTransaction>;
 
@@ -732,6 +867,11 @@ export interface PoR extends BaseContract {
 
     renounceOwnership(
       overrides?: Overrides & { from?: string }
+    ): Promise<PopulatedTransaction>;
+
+    s_xp(
+      arg0: string,
+      overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
 
     transferOwnership(
