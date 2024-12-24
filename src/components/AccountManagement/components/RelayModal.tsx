@@ -128,7 +128,7 @@ export const RelayModal = () => {
               }
             }}
           >
-            {allRelaysState?.relaysLoading ? 'Loading...' : 'Relay all'}
+            {allRelaysState?.relaysLoading ? 'Loading...' : `Relay all (${displayMineTxNeedToRelays.length})`}
           </Button>
         </List>
       </Section>
