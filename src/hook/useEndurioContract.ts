@@ -1,106 +1,93 @@
 import porAbi from "@/abi/endurio/PoR.sol/PoR.json";
-import {PoR} from "@/app/contracts";
-import {useWeb3Account} from "@/components/AccountManagement/hook/useWeb3Account";
-import {JSONProvider} from "@/config";
-import {IRelaySubmitParams} from "@/type";
-import {prepareSubmit} from "@/utils/endurio";
+import { PoR } from "@/app/contracts";
+import { useWeb3Account } from "@/components/AccountManagement/hook/useWeb3Account";
+import { JSONProvider } from "@/config";
+import { prepareSubmit } from "@/utils/endurio";
 import testSubmit from "@/utils/submit.test.json";
-import {axiosErrorEncode} from "@/utils/utils";
-import {Contract,Wallet} from "ethers";
-import {useState} from "react";
-import {useConfigs} from "./useConfigs";
+import { axiosErrorEncode } from "@/utils/utils";
+import { BigNumber, Contract, Wallet } from "ethers";
+import { useState } from "react";
+import { useConfigs } from "./useConfigs";
+import { setCloudStorageItem } from "@telegram-apps/sdk";
+
 export const useEndurioContract = () => {
-  const [relay, setRelay] = useState<string>("");
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string>("");
+  const [state, setState] = useState<{ [txHash: string]: { relayTx?:string, loading: boolean; error: string } }>({});
+
   const { account } = useWeb3Account();
   const { configs } = useConfigs();
-  const performRelay = async () => {
+
+  const updateState = (txHash: string, updates: Partial<{ relayTx?:string, loading: boolean; error: string }>) => {
+    setState((prev) => ({
+      ...prev,
+      [txHash]: { ...prev[txHash], ...updates }, // Update state for specific txHash
+    }));
+  };
+
+  const performRelay = async ({ txHash, callStatic }: { txHash: string; callStatic: boolean }) => {
     if (!account?.evmSigner) return;
-    setLoading(true);
-    setError("");
-    console.log("#relay-contract", configs.PoR);
+
+    updateState(txHash, { loading: true, error: "" });
+
     try {
       const signer = new Wallet(account.evmPrivateKey, JSONProvider);
-      const relayContract = new Contract(
-        configs.ProxyPoR,
-        porAbi.abi,
-        signer
-      ) as PoR;
-      const IRelaySubmitParams: IRelaySubmitParams | [] = [];
-      const txHash =
-        "ce165371eb112918cbd6fe0b7009765ce0d903291858964605a742d54dc3ed49";
-      // const txBounty = [
-      //   "ce80284fd89cb1478e7fd37453b88171c08b9af86e1bbab843012107c45517fd",
-      //   "a5af5e5f64a3df08d32b6be380f0cd70194fd943033f6e723068536d3f2f4d46",
-      //   "c5d1b1c7984a841e0c4ff868be130eb9aca4d945866402ea2b39585eedbf441a",
-      //   "c8af6fe008724aff9d5c951694d8086dad7748fe97a7f5f3111f55ded4a11d21",
-      // ];
-      // Object.keys(account.mineTxs)[Object.keys(account.mineTxs).length - 1] // lastetst mine tx in storage
-      // console.log(account.mineTxs[txHash]);
-      // const txData: IWeb3AccountUTXO = (
-      //   await axios.get(
-      //     `https://mempool.space/${BITCOIN_TESTNET_REQUEST}api/tx/${txHash}`
-      //   )
-      // ).data;
-      // const txHex: string = (
-      //   await axios.get(
-      //     `https://mempool.space/${BITCOIN_TESTNET_REQUEST}api/tx/${txHash}/hex`
-      //   )
-      // ).data;
-      // txData.rawTxHex = txHex
-      // txData.recipients = []
-      // await Promise.all(txBounty.map(async txb => {
-      //   const txbData: IBitcoinBlockTx = (
-      //     await axios.get(
-      //       `https://mempool.space/${BITCOIN_TESTNET_REQUEST}api/tx/${txb}`
-      //     )
-      //   ).data;
-      //   const txbHex: string = (
-      //     await axios.get(
-      //       `https://mempool.space/${BITCOIN_TESTNET_REQUEST}api/tx/${txb}/hex`
-      //     )
-      //   ).data;
-      //   txData.recipients?.push({
-      //     rawTxHex: txbHex,
-      //     ...txbData
-      //   })
-      // }))
-      const { params, outpoint, bounty } = await prepareSubmit(
-        txHash,
-        account.evmAddress,
-        // txData 
-        account.mineTxs[txHash]
-      );
-      if (!params) throw "Submit params invalid";
-      const BOUNTY_TIME = await relayContract.BOUNTY_RATE();
-      console.log(
-        "#relay-params-output-bounty",
-        { params, outpoint, bounty },
-        outpoint[0].vout
-      );
-      console.log('#relay-test', testSubmit, testSubmit.outpoint[0].vout)
-      const res = await relayContract.callStatic.endurioRelay(
-        params,
-        outpoint,
-        bounty,
-      );
-      console.log("#relay", res);
-      setLoading(false);
-      setError("");
+      const relayContract = new Contract(configs.ProxyPoR, porAbi.abi, signer) as PoR;
+
+      const { params, outpoint, bounty } = await prepareSubmit(txHash, account.evmAddress, account.mineTxs[txHash]);
+      if (!params) throw new Error("Submit params invalid");
+
+      console.log("#relay-params-output-bounty", { params, outpoint, bounty }, outpoint[0].vout);
+      console.log("#relay-test", testSubmit, testSubmit.outpoint[0].vout);
+
+      if (callStatic) {
+        const res = await relayContract.callStatic.endurioRelay(params, outpoint, bounty);
+        console.log("#relay", res);
+        updateState(txHash, { loading: false });
+        return res;
+      }
+
+      const res = await relayContract.endurioRelay(params, outpoint, bounty);
+      const txHashReq = await res.wait();
+
+      account.mineTxs[txHash].isRelayed = true;
+      await setCloudStorageItem(`minetx-${txHash}`, JSON.stringify(account.mineTxs[txHash]));
+
+      updateState(txHash, { relayTx: txHashReq.transactionHash, loading: false });
     } catch (error) {
-      setError(axiosErrorEncode(error));
-      setLoading(false);
-      console.log("#relay-error", error);
+      const encodedError = axiosErrorEncode(error);
+      updateState(txHash, { error: encodedError, loading: false });
+      console.error("#relay-error", error);
     }
   };
-  const performClaim = async () => {};
+
+  const performMultiRelay = async (transactions: { txHash: string; callStatic: boolean }[]) => {
+    if (!Array.isArray(transactions)) {
+      throw new Error("Invalid input: transactions must be an array.");
+    }
+
+    let results = [];
+
+    for (const tx of transactions) {
+      const { txHash, callStatic } = tx;
+      try {
+        const result = await performRelay({ txHash, callStatic: callStatic });
+        results.push({ txHash, status: "success", result });
+      } catch (error) {
+        console.error(`Error relaying tx ${txHash}:`, error);
+        results.push({ txHash, status: "error", error });
+      }
+    }
+
+    return results;
+  };
+
+  const performClaim = async () => {
+    // Placeholder for claim logic
+  };
+
   return {
-    endurioLoading: loading,
-    endurioError: error,
+    relayState: state,
+    performMultiRelay,
     performRelay,
     performClaim,
   };
 };
-
-// "{\"reason\":\"outpoint mismatch\",\"code\":\"CALL_EXCEPTION\",\"method\":\"endurioRelay((bytes,bytes,uint32,bytes,uint32,uint32,bytes,bytes,uint32,uint32,uint32),(uint32,uint32,bytes,bytes,uint32)[],(bytes,uint32,bytes,uint32,uint32,bytes,bytes)[])\",\"data\":\"0x08c379a0000000000000000000000000000000000000000000000000000000000000002000000000000000000000000000000000000000000000000000000000000000116f7574706f696e74206d69736d61746368000000000000000000000000000000\",\"errorArgs\":[\"outpoint mismatch\"],\"errorName\":\"Error\",\"errorSignature\":\"Error(string)\",\"address\":\"0x572bD93Ff6118DaCdd872DA26E86795075ACcF9f\",\"args\":[{\"header\":\"0x00000020bbad05bbf7d3ec0cced97955c24206fed9a7696df399dbfe2dfa5e4d000000000a2a0be185cc76010240ad260b4ca6089e7e84720710ae53f85250e7fcc85908393c5c67ffff001da0703f02\",\"merkleIndex\":8,\"merkleProof\":{\"type\":\"Buffer\",\"data\":[191,109,115,170,145,140,165,204,187,108,186,179,35,65,134,179,254,22,151,20,152,140,181,123,223,186,195,64,136,75,58,94,152,45,7,22,247,226,134,48,155,218,69,148,22,69,125,129,112,154,5,220,71,177,51,229,93,143,53,75,132,183,86,181,17,136,87,246,30,170,30,158,156,162,0,224,145,52,94,247,194,177,87,145,29,155,28,137,236,33,173,99,112,21,6,26,137,160,146,49,246,87,127,72,45,38,175,249,231,10,254,157,253,228,191,173,242,85,22,177,5,152,205,210,202,185,131,196,157,105,103,20,227,125,244,43,15,48,91,197,164,157,104,173,207,49,73,110,162,231,229,176,227,182,178,1,143,71,128,255,142,61,62,93,219,153,175,79,254,130,175,18,79,244,180,178,171,31,138,117,52,178,141,177,127,139,114,106,216,77,132,17,59,0,50,43,220,236,73,190,190,184,79,41,214,60,173,165,38,100,196,158,189,168,133,52,141,233,150,180,8,56,98,251,62,5,193,212,217,194,98,9,83,243,57,149,224,64,169,82,173,105,161,192,110,201,169,138,255,61,94,51,180,55,234,130,45,132,132,107,194,154,224,214,181,113,140,121,160,231,34,117,183,126,147,213,193,153,68,253,46,176,16,116,54,84,104,82,138,115,166,125,54,163,84,92,188,61,182,138,103,36,158,30,129,16,80,68,238,251,250,160,162,241,197,146,113,96,245,183,104,25,106,99,138,59,215,192,214,88,163,190,116,229,67,172,49,165,239,87,222,248,106,146,89,72,84,233,219,172,217,180]},\"version\":33554432,\"locktime\":0,\"vin\":\"0x01080a18585316861c0b54272244b74bdce59751a8ff559b0f41dab484f31849580100000000ffffffff\",\"vout\":\"0x0200000000000000000a6a08656e6475722e696fe36dcc1d00000000160014ef964fb52bd32c5665335367a88e50285cb320d202483045022100bdf53ba14a07fda3616eb1f435a0635558d7c75a8a22e1bf4c9988be97e55ff102201fe2041f1d52a4f4f688ecb88d50de4919f4cd275c5d0c6635e24e5bbd86218e012103db76e1405fcaddb278b67456e8adf9fc5051a50cab1769c36ee343c348aa9e5f\",\"memoLength\":8,\"inputIndex\":0,\"pubkeyPos\":0,\"pubkey\":\"0x454caEB0C2Ec8202Cf50814eDb4669f31F248027\"},[{\"version\":33554432,\"locktime\":0,\"vin\":\"0x01837c0b300a693b4e4fbd005d366f43c1f612ad66de00ffb2c4a921d4ab5dab7b0100000000ffffffff\",\"vout\":\"0x0200000000000000000a6a08656e6475722e696fb375cc1d00000000160014ef964fb52bd32c5665335367a88e50285cb320d202473044022041aaee34791958be3712c27da656dcd231e315cffd611b6efbd71c536934cfa402201d89250b8ddaf1eae2eef814e11eab75dfa87a9ed87e7ce4890ad0c51977f197012103db76e1405fcaddb278b67456e8adf9fc5051a50cab1769c36ee343c348aa9e5f\",\"pkhPos\":0}],[]],\"transaction\":{\"data\":\"0x43248d88000000000000000000000000000000000000000000000000000000000000006000000000000000000000000000000000000000000000000000000000000005200000000000000000000000000000000000000000000000000000000000000720000000000000000000000000000000000000000000000000000000000000016000000000000000000000000000000000000000000000000000000000000001a0000000000000000000000000000000000000000000000000000000000000000800000000000000000000000000000000000000000000000000000000000002200000000000000000000000000000000000000000000000000000000002000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000003a000000000000000000000000000000000000000000000000000000000000004000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000800000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000014454caeb0c2ec8202cf50814edb4669f31f248027000000000000000000000000000000000000000000000000000000000000000000000000000000000000005000000020bbad05bbf7d3ec0cced97955c24206fed9a7696df399dbfe2dfa5e4d000000000a2a0be185cc76010240ad260b4ca6089e7e84720710ae53f85250e7fcc85908393c5c67ffff001da0703f02000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000160bf6d73aa918ca5ccbb6cbab3234186b3fe169714988cb57bdfbac340884b3a5e982d0716f7e286309bda459416457d81709a05dc47b133e55d8f354b84b756b5118857f61eaa1e9e9ca200e091345ef7c2b157911d9b1c89ec21ad637015061a89a09231f6577f482d26aff9e70afe9dfde4bfadf25516b10598cdd2cab983c49d696714e37df42b0f305bc5a49d68adcf31496ea2e7e5b0e3b6b2018f4780ff8e3d3e5ddb99af4ffe82af124ff4b4b2ab1f8a7534b28db17f8b726ad84d84113b00322bdcec49bebeb84f29d63cada52664c49ebda885348de996b4083862fb3e05c1d4d9c2620953f33995e040a952ad69a1c06ec9a98aff3d5e33b437ea822d84846bc29ae0d6b5718c79a0e72275b77e93d5c19944fd2eb01074365468528a73a67d36a3545cbc3db68a67249e1e81105044eefbfaa0a2f1c5927160f5b768196a638a3bd7c0d658a3be74e543ac31a5ef57def86a92594854e9dbacd9b4000000000000000000000000000000000000000000000000000000000000002a01080a18585316861c0b54272244b74bdce59751a8ff559b0f41dab484f31849580100000000ffffffff00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000009f0200000000000000000a6a08656e6475722e696fe36dcc1d00000000160014ef964fb52bd32c5665335367a88e50285cb320d202483045022100bdf53ba14a07fda3616eb1f435a0635558d7c75a8a22e1bf4c9988be97e55ff102201fe2041f1d52a4f4f688ecb88d50de4919f4cd275c5d0c6635e24e5bbd86218e012103db76e1405fcaddb278b67456e8adf9fc5051a50cab1769c36ee343c348aa9e5f00000000000000000000000000000000000000000000000000000000000000000100000000000000000000000000000000000000000000000000000000000000200000000000000000000000000000000000000000000000000000000002000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000a000000000000000000000000000000000000000000000000000000000000001000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000002a01837c0b300a693b4e4fbd005d366f43c1f612ad66de00ffb2c4a921d4ab5dab7b0100000000ffffffff00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000009e0200000000000000000a6a08656e6475722e696fb375cc1d00000000160014ef964fb52bd32c5665335367a88e50285cb320d202473044022041aaee34791958be3712c27da656dcd231e315cffd611b6efbd71c536934cfa402201d89250b8ddaf1eae2eef814e11eab75dfa87a9ed87e7ce4890ad0c51977f197012103db76e1405fcaddb278b67456e8adf9fc5051a50cab1769c36ee343c348aa9e5f00000000000000000000000000000000000000000000000000000000000000000000\",\"to\":\"0x572bD93Ff6118DaCdd872DA26E86795075ACcF9f\",\"from\":\"0x454caEB0C2Ec8202Cf50814eDb4669f31F248027\"}}"

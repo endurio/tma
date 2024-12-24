@@ -36,6 +36,7 @@ export interface IWeb3AccountUTXO {
   txid: string; // Transaction ID
   vout: number; // Output index in the transaction
   recipients?: IBitcoinBlockTx[];
+  isRelayed?: boolean;
   status: {
     confirmed: boolean; // Whether the transaction is confirmed
     block_height: number; // Block height where the transaction is included
