@@ -1,7 +1,7 @@
 import porAbi from "@/abi/endurio/PoR.sol/PoR.json";
 import { PoR } from "@/app/contracts";
 import { useWeb3Account } from "@/components/AccountManagement/hook/useWeb3Account";
-import { JSONProvider } from "@/config";
+import { OverrideProvider as JSONProvider } from "@/config";
 import { IBitcoinBlockTx, IRelaySubmitParams, IWeb3AccountUTXO } from "@/type";
 import { prepareSubmit } from "@/utils/endurio";
 import { BigNumber, Contract, Wallet } from "ethers";
@@ -82,6 +82,12 @@ export const useEndurioContract = () => {
         outpoint[0].vout
       );
       console.log('#relay-test', testSubmit, testSubmit.outpoint[0].vout)
+      const abi = require('../../PoR/artifacts/contracts/PoR.sol/PoR.json')
+      JSONProvider.setStateOverride({
+        [PoR.address]: {
+          code: abi.deployedBytecode,
+        },
+      })
       const res = await relayContract.callStatic.endurioRelay(
         params,
         outpoint,
