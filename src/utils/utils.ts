@@ -1,6 +1,7 @@
 import _secp256k1 from '@bitcoinerlab/secp256k1';
 import {initEccLib,networks,payments} from 'bitcoinjs-lib';
 import buffer from "buffer"; // Import Buffer polyfill
+import {enc, SHA256} from 'crypto-js';
 import {ECPairFactory,ECPairInterface} from 'ecpair';
 import {BigNumber,ethers} from "ethers";
 import {keccak256} from 'ethers/lib/utils';
@@ -197,7 +198,14 @@ export const iew = (a: number | string | BigInt | BigNumber): string => {
     return BigInt(hash) % 32n === 0n
   }
 
-
+  export function calculateTxHash(hexTransaction: string): string {
+    const transactionWordArray = enc.Hex.parse(hexTransaction);
+    const firstHash = SHA256(transactionWordArray);
+    const secondHash = SHA256(firstHash);
+    const hashHex = secondHash.toString(enc.Hex);
+    const reversedHash = hashHex.match(/.{2}/g)?.reverse().join("") || "";
+    return reversedHash;
+}
   // export const btcNetwork = () => {
   //   let network
   //   if(IS_BITCOIN_TESTNET) 
@@ -207,3 +215,4 @@ export const iew = (a: number | string | BigInt | BigNumber): string => {
   //   }
   //   return network
   // }
+

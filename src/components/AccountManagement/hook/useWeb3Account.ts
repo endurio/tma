@@ -50,14 +50,13 @@ export const useWeb3Account = () => {
     if(!_webAccount || !btcAddress || !evmAddress || !setIsFetchingWeb3Account || !setWeb3Account) return;
     setIsFetchingWeb3Account(true)
     const web3State = await loadWeb3AccountData([evmAddress], WHITELIST_TOKEN_LIST,[])
+    const mineTxKeys = (await getCloudStorageKeys()).filter(mineTxKey => mineTxKey?.split('-')[0] === 'minetx')
+    const mineTxInputsData = await getCloudStorageItem(mineTxKeys)
     const balance = await fetchUTXO(btcAddress)
     const mineTxInputs: {[key:string]: IWeb3AccountUTXO} = {}
-    for(let i = 0; i < localStorage.length; i++){
-      const mineTxKey = localStorage.key(i)
-      if(mineTxKey?.split('-')[0] === 'minetx')  {
-        mineTxInputs[mineTxKey.split('-')[1]] = JSON.parse(localStorage.getItem(mineTxKey) ?? '{}')
-      }
-    }
+    Object.keys(mineTxInputsData).map(mineTxKey => {
+      mineTxInputs[mineTxKey.split('-')[1]] = JSON.parse(mineTxInputsData[mineTxKey])
+    })
     _webAccount.mineTxs = mineTxInputs
     _webAccount.balances = web3State[evmAddress].balances
     _webAccount.allowances = web3State[evmAddress].allowances

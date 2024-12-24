@@ -3,7 +3,7 @@ import {BITCOIN_TESTNET_REQUEST, BTC_FEE,useBitcoinNetwork} from "@/hook/useBitc
 import {useTokensPrice} from "@/hook/useTokensPrice";
 import "@/pages/IndexPage/IndexPage.css";
 import {FONT_SIZE_SM} from "@/utils/constant";
-import {shortenAddress,weibtc,zerofy} from "@/utils/utils";
+import {calculateTxHash, shortenAddress,weibtc,zerofy} from "@/utils/utils";
 import {
   Button,
   Cell,
@@ -13,7 +13,7 @@ import {
   Modal,
   Section,
 } from "@telegram-apps/telegram-ui";
-import {Psbt} from "bitcoinjs-lib";
+import {Psbt, Transaction} from "bitcoinjs-lib";
 import {useEffect,useMemo,useState} from "react";
 import {useWeb3Account} from "../hook/useWeb3Account";
 import "./index.css";
@@ -26,7 +26,7 @@ export const MineModal = () => {
   const [visible, setVisible] = useState(false);
   const [confirmVisible, setConfirmVisible] = useState(false);
   const [opReturn, setOpReturn] = useState<string>("endur.io");
-  const [maxBounty, setMaxBounty] = useState<string>("4");
+  const [maxBounty, setMaxBounty] = useState<string>("0");
   const [maxBountyError, setMaxBountyError] = useState<string>("");
   const [transactionDetails, setTransactionDetails] = useState<any>(null);
   const {tokenPrices} = useTokensPrice()
@@ -74,6 +74,10 @@ export const MineModal = () => {
   const handleMine = async () => {
     if(!mineParams.txHex && mineError === '' && mineLoading === false) return;
     setConfirmVisible(false);
+    // localStorage.setItem(`minetx-${txHash}`, JSON.stringify(mineParams.input))
+    // const txHashEst = 
+    const tx = Transaction.fromHex(mineParams.txHex);
+    await setCloudStorageItem(`minetx-${tx.getId()}`, JSON.stringify(mineParams.input))
     const txHash = await broadcastTransaction(mineParams.txHex);
     if (txHash) {
       setVisible(false)
@@ -90,7 +94,6 @@ export const MineModal = () => {
           </a>.
         </div>
       ,{type: 'success'});
-      localStorage.setItem(`minetx-${txHash}`, JSON.stringify(mineParams.input))
       await fetchWeb3AccountState()
     }
     
