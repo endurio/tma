@@ -18,6 +18,7 @@ import { Buffer } from "buffer";
 import { MerkleTree } from "merkletreejs";
 
 const ZERO_ADDRESS = "0x0000000000000000000000000000000000000000";
+
 export const prepareSubmit = async (txHash: string, evmAddress: string, receiptInputs: IWeb3AccountUTXO) => {
   const txData: IBitcoinBlockTx = (
     await axios.get(
@@ -56,19 +57,19 @@ export const prepareSubmit = async (txHash: string, evmAddress: string, receiptI
   ).data;
   
   const txIndex = txMerkleProof.pos;
-  const merkProof = extractMerkleProof(txMerkleProof);
-  _extractMerkleProof(blockTxData, txData.txid);
+  const merkProof = _extractMerkleProof(blockTxData, txData.txid)
+  
   const memo = extractMemo(txData);
-  console.log("#Transaction Details:", {
-    transaction: txData,
-    memo,
-    blockData: blockTxData,
-    blockHeader: blockTxHeader,
-    totalTxs: blockTxIds.length,
-    merkleProof: txMerkleProof,
-    extractedProof: merkProof,
-    transactionIndex: txIndex,
-  });
+  // console.log("#Transaction Details:", {
+  //   transaction: txData,
+  //   memo,
+  //   blockData: blockTxData,
+  //   blockHeader: blockTxHeader,
+  //   totalTxs: blockTxIds.length,
+  //   merkleProof: txMerkleProof,
+  //   extractedProof: merkProof,
+  //   transactionIndex: txIndex,
+  // });
   const params = prepareSubmitParams({
     tx: txData,
     txMerkleProof,
@@ -87,7 +88,7 @@ export const prepareSubmit = async (txHash: string, evmAddress: string, receiptI
   });
   // const Tran = Transaction.fromHex(txHex)
   // console.log('#re', Tran)
-  console.log("#Transaction Submit", params, outpoint, bounty);
+  // console.log("#Transaction Submit", {params, outpoint, bounty});
   //   let bounty: Bounty = [];
   //   if (!bountyParams?.noBounty) {
   //     bounty = _prepareBountyTx(txParams);
@@ -144,7 +145,7 @@ function prepareSubmitParams({
     memoLength,
     inputIndex,
     pubkeyPos,
-    pubkey: evmAddress,
+    pubkey: '0x' + 'db76e1405fcaddb278b67456e8adf9fc5051a50cab1769c36ee343c348aa9e5fba9d3583c81439836bbe25ca0543bb64b134bee4267c7987130ed43ab327c969',
     // payer,
   };
 }
@@ -188,6 +189,7 @@ async function prepareOutpointParams({
 }: IInputOutpointParams): Promise<PoR.ParamOutpointStruct[]> {
   const script = Buffer.from(tx.vin[inputIdx].scriptsig, "hex");
   if (script && script.length > 0) {
+    
     if (script.length == 23 && script.slice(0, 3).toString("hex") == "160014") {
       // redeem script for P2SH-P2WPKH
       return [];
@@ -222,7 +224,6 @@ async function prepareOutpointParams({
     return []; // there's no data for dx here
   }
   const [version, vin, vout, locktime] = extractTxParams(dx);
-
   return [
     {
       version: parseInt(
@@ -284,12 +285,18 @@ async function prepareBountyParams({
       `https://mempool.space/${BITCOIN_TESTNET_REQUEST}api/tx/${recipientTx.txid}/merkle-proof`
     )
   ).data;
-  console.log('#recipient', samplingIndex, recipientTx ,recipientBlock, recipientMerkleProof)
+  const blockTxHeader: string = (
+    await axios.get(
+      `https://mempool.space/${BITCOIN_TESTNET_REQUEST}api/block/${recipientTx?.status.block_hash}/header`
+    )
+  ).data;
+  console.log('#re', recipientTx.txid)
+  // console.log('#recipient', samplingIndex, recipientTx ,recipientBlock, recipientMerkleProof)
   const merkleProof = extractMerkleProof(recipientMerkleProof);
   const [version, vin, vout, locktime] = extractTxParams(recipientTx);
-
+  console.log(recipientBlock)
   const bounty: PoR.ParamBountyStruct = {
-    header: "0x" + recipientBlock.merkle_root,
+    header: "0x" + blockTxHeader,
     merkleProof,
     merkleIndex: recipientMerkleProof.pos,
     version: parseInt(
@@ -406,13 +413,14 @@ function _extractMerkleProof(block: IBitcoinBlockDetail, txHash: string) {
   const tree = new MerkleTree(txs, hash256, { isBitcoinTree: true });
   const root = tree.getRoot().toString("hex");
   const proof = tree.getProof(txHash);
-  console.log("#check", root, block.merkle_root);
-  return Buffer.concat(proof.map((p) => p.data));
+  // console.log("#check", root, block.merkle_root);
+  return Buffer.concat(proof.map((p) => p.data)).toString('hex');
 }
 
 function extractMerkleProof(proofs: IBitcoinTxMerkleProof) {
-  return Buffer.concat(proofs.merkle.map((m) => Buffer.from(m, "hex")));
+  return '0x' + Buffer.concat(proofs.merkle.map((m) => Buffer.from((m as any).reverseHex(), "hex"))).toString('hex');
 }
+
 function extractMemo(tx: IBitcoinBlockTx): string | undefined {
   // Find the index of the output with OP_RETURN script
   const memoIndex = tx.vout.findIndex((vout) =>
@@ -447,22 +455,30 @@ function extractHeader(block: IBitcoinBlockDetail) {
   ).reverseHex();
 }
 function extractTxParams(tx: IBitcoinBlockTx) {
-  const tt = stripTxWitness(importTx(tx));
-  const hex = tt.toHex();
-  let pos = 0;
-  for (const input of tx.vin) {
-    const sequence = (
-      input.sequence.toString(16).padStart(8, "0") as any
-    ).reverseHex();
-    pos = hex.indexOf(sequence, pos);
-    //   expect(pos).to.be.at.least(0, `input sequence not found: ${sequence}`);
-    pos += 8;
+  let tranx = Transaction.fromHex(tx.rawTxHex || '')
+  let hex = tx.rawTxHex || '';
+  const tranxWitNess = stripTxWitness(tranx);
+  hex = tranxWitNess.toHex()
+  if(hex.length === 0) {
+    throw 'No tx hex value'
+  }
+  const sequence = ((tranx.ins[tranx.ins.length-1].sequence.toString(16).padStart(8, '0') as String) as any).reverseHex()
+  const nOuts = tranx.outs.length.toString(16).padStart(2,'0')  // assume that nOuts fits in 1 byte
+  const value = ((tranx.outs[0].value.toString(16).padStart(16, '0') as String) as any).reverseHex()
+  let voutStart = hex.indexOf(sequence + nOuts + value)
+  if (voutStart < 0) {
+    throw 'parsing transaction vin/vout failed'
+  }
+  voutStart += 8  // 4 bytes sequence  
+
+  let vinStart = 8; // 4 bytes version
+  if (hex.substr(8, 2) == '00') {
+    vinStart += 4   // 2 more bytes for witness flag
   }
 
-  const vinStart = 8; // 2 more bytes for witness flag
-  const vin = "0x" + hex.substring(vinStart, pos);
-  const vout = "0x" + hex.substring(pos, hex.length - 8); // the last 8 bytes is lock time
-  return [tx.version, String(vin), String(vout), tx.locktime];
+  const vin = '0x'+hex.substring(vinStart, voutStart);
+  const vout = '0x'+hex.substring(voutStart, hex.length - 8); // the last 8 bytes is lock time
+  return [tx.version, vin, vout, tx.locktime];
 
   function stripTxWitness(tt: Transaction) {
     if (tt.hasWitnesses()) {

@@ -12,7 +12,7 @@ export const ECPair = ECPairFactory(_secp256k1);
 export const generateBitcoinWalletFromEVMPrivateKey = (
   privateKeyHex: string,
   compressed: boolean = true
-): { btcNonSegwitAddress: string; btcAddress: string, btcKeyPair: ECPairInterface } => {
+): { btcNonSegwitAddress: string; btcAddress: string, btcKeyPair: ECPairInterface, btcPublicKey: string} => {
 
   const cleanPrivateKeyHex = privateKeyHex.startsWith("0x")
   ? privateKeyHex.slice(2)
@@ -23,10 +23,12 @@ export const generateBitcoinWalletFromEVMPrivateKey = (
   .map((byte) => byte.toString(16).padStart(2, '0'))
   .join('');
   const { address } = payments.p2wpkh({ pubkey: keyPair.publicKey, network: BITCOIN_NETWORK});
+  // console.log('#hex', keyPair.publicKey.toString('hex'))
   const { address: addressNonSegWith } = payments.p2pkh({ pubkey: keyPair.publicKey, network: BITCOIN_NETWORK});
 
   return {
     btcNonSegwitAddress: addressNonSegWith ?? btcPublicKey,
+    btcPublicKey,
     btcAddress: address || '',
     btcKeyPair: keyPair,
   };
