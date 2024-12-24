@@ -1,16 +1,14 @@
 import porAbi from "@/abi/endurio/PoR.sol/PoR.json";
-import { PoR } from "@/app/contracts";
-import { useWeb3Account } from "@/components/AccountManagement/hook/useWeb3Account";
-import { JSONProvider } from "@/config";
-import { IBitcoinBlockTx, IRelaySubmitParams, IWeb3AccountUTXO } from "@/type";
-import { prepareSubmit } from "@/utils/endurio";
-import { BigNumber, Contract, Wallet } from "ethers";
-import { useState } from "react";
-import { useConfigs } from "./useConfigs";
-import { axiosErrorEncode, copyToClipboard } from "@/utils/utils";
-import axios from "axios";
-import testSubmit from "@/utils/submit.test.json"
-import { BITCOIN_TESTNET_REQUEST } from "./useBitcoinNetwork";
+import {PoR} from "@/app/contracts";
+import {useWeb3Account} from "@/components/AccountManagement/hook/useWeb3Account";
+import {JSONProvider} from "@/config";
+import {IRelaySubmitParams} from "@/type";
+import {prepareSubmit} from "@/utils/endurio";
+import testSubmit from "@/utils/submit.test.json";
+import {axiosErrorEncode} from "@/utils/utils";
+import {Contract,Wallet} from "ethers";
+import {useState} from "react";
+import {useConfigs} from "./useConfigs";
 export const useEndurioContract = () => {
   const [relay, setRelay] = useState<string>("");
   const [loading, setLoading] = useState(false);
