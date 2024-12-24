@@ -25,54 +25,54 @@ export const useEndurioContract = () => {
     try {
       const signer = new Wallet(account.evmPrivateKey, JSONProvider);
       const relayContract = new Contract(
-        configs.PoR,
+        configs.ProxyPoR,
         porAbi.abi,
         signer
       ) as PoR;
       const IRelaySubmitParams: IRelaySubmitParams | [] = [];
       const txHash =
         "ce165371eb112918cbd6fe0b7009765ce0d903291858964605a742d54dc3ed49";
-      const txBounty = [
-        "ce80284fd89cb1478e7fd37453b88171c08b9af86e1bbab843012107c45517fd",
-        "a5af5e5f64a3df08d32b6be380f0cd70194fd943033f6e723068536d3f2f4d46",
-        "c5d1b1c7984a841e0c4ff868be130eb9aca4d945866402ea2b39585eedbf441a",
-        "c8af6fe008724aff9d5c951694d8086dad7748fe97a7f5f3111f55ded4a11d21",
-      ];
+      // const txBounty = [
+      //   "ce80284fd89cb1478e7fd37453b88171c08b9af86e1bbab843012107c45517fd",
+      //   "a5af5e5f64a3df08d32b6be380f0cd70194fd943033f6e723068536d3f2f4d46",
+      //   "c5d1b1c7984a841e0c4ff868be130eb9aca4d945866402ea2b39585eedbf441a",
+      //   "c8af6fe008724aff9d5c951694d8086dad7748fe97a7f5f3111f55ded4a11d21",
+      // ];
       // Object.keys(account.mineTxs)[Object.keys(account.mineTxs).length - 1] // lastetst mine tx in storage
       // console.log(account.mineTxs[txHash]);
-      const txData: IWeb3AccountUTXO = (
-        await axios.get(
-          `https://mempool.space/${BITCOIN_TESTNET_REQUEST}api/tx/${txHash}`
-        )
-      ).data;
-      const txHex: string = (
-        await axios.get(
-          `https://mempool.space/${BITCOIN_TESTNET_REQUEST}api/tx/${txHash}/hex`
-        )
-      ).data;
-      txData.rawTxHex = txHex
-      txData.recipients = []
-      await Promise.all(txBounty.map(async txb => {
-        const txbData: IBitcoinBlockTx = (
-          await axios.get(
-            `https://mempool.space/${BITCOIN_TESTNET_REQUEST}api/tx/${txb}`
-          )
-        ).data;
-        const txbHex: string = (
-          await axios.get(
-            `https://mempool.space/${BITCOIN_TESTNET_REQUEST}api/tx/${txb}/hex`
-          )
-        ).data;
-        txData.recipients?.push({
-          rawTxHex: txbHex,
-          ...txbData
-        })
-      }))
+      // const txData: IWeb3AccountUTXO = (
+      //   await axios.get(
+      //     `https://mempool.space/${BITCOIN_TESTNET_REQUEST}api/tx/${txHash}`
+      //   )
+      // ).data;
+      // const txHex: string = (
+      //   await axios.get(
+      //     `https://mempool.space/${BITCOIN_TESTNET_REQUEST}api/tx/${txHash}/hex`
+      //   )
+      // ).data;
+      // txData.rawTxHex = txHex
+      // txData.recipients = []
+      // await Promise.all(txBounty.map(async txb => {
+      //   const txbData: IBitcoinBlockTx = (
+      //     await axios.get(
+      //       `https://mempool.space/${BITCOIN_TESTNET_REQUEST}api/tx/${txb}`
+      //     )
+      //   ).data;
+      //   const txbHex: string = (
+      //     await axios.get(
+      //       `https://mempool.space/${BITCOIN_TESTNET_REQUEST}api/tx/${txb}/hex`
+      //     )
+      //   ).data;
+      //   txData.recipients?.push({
+      //     rawTxHex: txbHex,
+      //     ...txbData
+      //   })
+      // }))
       const { params, outpoint, bounty } = await prepareSubmit(
         txHash,
         account.evmAddress,
-        txData 
-        // account.mineTxs[txHash]
+        // txData 
+        account.mineTxs[txHash]
       );
       if (!params) throw "Submit params invalid";
       const BOUNTY_TIME = await relayContract.BOUNTY_RATE();
